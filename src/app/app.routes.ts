@@ -5,10 +5,15 @@ import { SimulationComponent } from './pages/simulation/simulation.component';
 export const routes: Routes = [
   {
     path: '',
-    component: HomeComponent
+    loadComponent: () => import('./pages/home/home.component').then(mod => mod.HomeComponent),
   },
   {
     path: 'simulacao',
-    component: SimulationComponent
+    loadComponent: () => import('./pages/simulation/simulation.component').then(mod => mod.SimulationComponent),
+  },
+  {
+    path: '**',
+    redirectTo: '',
+    pathMatch: 'full'
   }
 ];
