@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { HeaderComponent } from "../../shared/header/header.component";
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import {MatIconModule} from '@angular/material/icon';
@@ -25,15 +25,19 @@ import { ProductTaxInfo, ResponseFiles } from './taxReform';
   ],
 })
 export class HomeComponent implements OnInit{
+  private renderer2 = inject(Renderer2);
+  file: File | null = null;
   columnsToDisplay = ['tipi','classification', 'description', 'icms', 'pis', 'cofins', 'ipi'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: any | null;
   showBoxListTipi: boolean = false;
   showBoxListClassification: boolean = false;
-  @ViewChild('boxList') boxList!: ElementRef;
+  @ViewChild('inputRefTipi') inputRefTipi!: ElementRef;
+  @ViewChild('inputRefClassification') inputRefClassification!: ElementRef;
   listTipi: ProductTaxInfo[] = [];
   dataSource: ProductTaxInfo[] = [];
   listClassifications: string[] = [];
+  currentItem: ProductTaxInfo = {} as ProductTaxInfo;
   data: ProductTaxInfo[] = [
     {
       classification: 'Alimentos',
@@ -178,14 +182,17 @@ export class HomeComponent implements OnInit{
       this.listTipi = this.dataSource;
   }
 
-  selecItem(item: any){
+  selecItem(item: ProductTaxInfo){
     const maxLength = 50;
-    this.dataChart.labels[0] = item.description.length > maxLength
+    if(this.currentItem.tipi !== item.tipi){
+      this.dataChart.labels[0] = item.description.length > maxLength
       ? item.description.substring(0, maxLength) + '...'  // Limita a 100 caracteres e adiciona '...'
       : item.description;
-    // this.dataChart.labels[0] = item.description;
-    this.dataChart = { ...this.dataChart };
-    console.log("ITEM: ", item.description)
+      // this.dataChart.labels[0] = item.description;
+      this.dataChart = { ...this.dataChart };
+      console.log("ITEM: ", item.description)
+      this.currentItem = item;
+    }
   }
 
   onBlurInput(inputName: string){
@@ -222,6 +229,7 @@ export class HomeComponent implements OnInit{
       console.log("Item: ", item.tipi);
       return el.tipi.includes(item.tipi);
     });
+    this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', item.tipi)
     console.log("Vendo o item: ",item)
     console.log("Vendo o array: ", this.dataSource)
   }
@@ -233,6 +241,7 @@ export class HomeComponent implements OnInit{
       console.log("Item: ", item);
       return el.classification.includes(item);
     });
+    this.renderer2.setProperty( this.inputRefClassification.nativeElement,'value', item)
     console.log("Vendo o item: ",item)
     console.log("Vendo o array: ", this.dataSource)
   }
@@ -255,5 +264,18 @@ export class HomeComponent implements OnInit{
     this.listTipi = this.data;
     this.listClassifications = [];
     this.getClassifications();
+    this.renderer2.setProperty( this.inputRefClassification.nativeElement,'value', '')
+    this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', '')
+  }
+
+  onFileChange(event: any): void {
+    const file = event.target.files[0];
+
+    if (file) {
+      this.file = file;
+      console.log('Arquivo selecionado:', file.name);
+    } else {
+      console.error('Nenhum arquivo selecionado.');
+    }
   }
 }
