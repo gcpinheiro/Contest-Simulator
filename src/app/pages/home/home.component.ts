@@ -27,19 +27,23 @@ import { ProductTaxInfo, ResponseFiles } from './taxReform';
 export class HomeComponent implements OnInit{
   private renderer2 = inject(Renderer2);
   file: File | null = null;
-  columnsToDisplay = ['tipi','classification', 'description', 'icms', 'pis', 'cofins', 'ipi'];
+  columnsToDisplay = ['input','tipi','classification', 'description', 'icms', 'pis', 'cofins', 'ipi'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: any | null;
   showBoxListTipi: boolean = false;
   showBoxListClassification: boolean = false;
+  showBoxListDescription: boolean = false;
   @ViewChild('inputRefTipi') inputRefTipi!: ElementRef;
   @ViewChild('inputRefClassification') inputRefClassification!: ElementRef;
+  @ViewChild('inputRefDescription') inputRefDescription!: ElementRef;
   listTipi: ProductTaxInfo[] = [];
   dataSource: ProductTaxInfo[] = [];
   listClassifications: string[] = [];
+  listDescriptions: ProductTaxInfo[] = [];
   currentItem: ProductTaxInfo = {} as ProductTaxInfo;
   data: ProductTaxInfo[] = [
     {
+      input: 'Entradas',
       classification: 'Alimentos',
       tipi: '1006.20.10',
       description: 'Arroz descascado (arroz cargo ou castanho) - Parboilizado',
@@ -57,6 +61,7 @@ export class HomeComponent implements OnInit{
       legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
     },
     {
+      input: 'Entradas',
       classification: 'Alimentos',
       tipi: '1006.20.20',
       description: 'Arroz descascado (arroz cargo ou castanho) - Não parboilizado',
@@ -74,6 +79,7 @@ export class HomeComponent implements OnInit{
       legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
     },
     {
+      input: 'Saídas',
       classification: 'Alimentos',
       tipi: '1006.30.11',
       description: 'Arroz semibranqueado ou branqueado, mesmo polido ou brunido (glaciado*) - Parboilizado - Polido ou brunido',
@@ -91,6 +97,7 @@ export class HomeComponent implements OnInit{
       legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
     },
     {
+      input: 'Saídas',
       classification: 'Dispositivos médicos',
       tipi: '9018.90.95',
       description: 'Clipe venoso',
@@ -136,6 +143,7 @@ export class HomeComponent implements OnInit{
 
   ngOnInit(): void {
     this.dataSource = this.data;
+    this.listDescriptions = this.data;
     this.getClassifications();
     const documentStyle = getComputedStyle(document.documentElement);
       const textColor = documentStyle.getPropertyValue('--text-color');
@@ -186,11 +194,9 @@ export class HomeComponent implements OnInit{
     const maxLength = 50;
     if(this.currentItem.tipi !== item.tipi){
       this.dataChart.labels[0] = item.description.length > maxLength
-      ? item.description.substring(0, maxLength) + '...'  // Limita a 100 caracteres e adiciona '...'
+      ? item.description.substring(0, maxLength) + '...'
       : item.description;
-      // this.dataChart.labels[0] = item.description;
       this.dataChart = { ...this.dataChart };
-      console.log("ITEM: ", item.description)
       this.currentItem = item;
     }
   }
@@ -204,46 +210,62 @@ export class HomeComponent implements OnInit{
       else if(inputName === 'classificationInput'){
         this.showBoxListClassification = false;
       }
+      else if(inputName === 'descriptionInput'){
+        this.showBoxListDescription = false;
+      }
     }, 100);
   }
 
   onInputChange(tipi: any){
-    this.listTipi = this.data.filter((el) => el.tipi.includes(tipi))
-    console.log("Event: ", this.listTipi)
+    this.listTipi = this.dataSource.filter((el) => el.tipi.includes(tipi))
+  }
+
+  onInputChangeDescription(value: any){
+    this.listDescriptions = this.dataSource.filter((el) => el.description.includes(value))
   }
 
   onFocusInput(inputName: string){
     if(inputName === 'tipiInput'){
+      this.listTipi = this.dataSource.filter((el) => el.tipi.includes(''))
       this.showBoxListTipi = true;
     }
 
     else if(inputName === 'classificationInput'){
       this.showBoxListClassification = true;
     }
+
+    else if(inputName === 'descriptionInput'){
+      this.listDescriptions = this.dataSource.filter((el) => el.description.includes(''))
+      this.showBoxListDescription = true;
+    }
   }
 
   selectTipi(item: ProductTaxInfo){
     this.dataSource = [];
     this.dataSource = this.data.filter((el) => {
-      console.log("El: ", el.tipi);
-      console.log("Item: ", item.tipi);
       return el.tipi.includes(item.tipi);
     });
     this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', item.tipi)
-    console.log("Vendo o item: ",item)
-    console.log("Vendo o array: ", this.dataSource)
   }
 
   selectClassification(item: string){
+    if(this.inputRefDescription.nativeElement.value.length > 0 || this.inputRefTipi.nativeElement.value.length > 0){
+      this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', '')
+      this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', '')
+    }
     this.dataSource = [];
     this.dataSource = this.data.filter((el) => {
-      console.log("El: ", el);
-      console.log("Item: ", item);
       return el.classification.includes(item);
     });
     this.renderer2.setProperty( this.inputRefClassification.nativeElement,'value', item)
-    console.log("Vendo o item: ",item)
-    console.log("Vendo o array: ", this.dataSource)
+  }
+
+  selectDescription(item: ProductTaxInfo){
+    this.dataSource = [];
+    this.dataSource = this.data.filter((el) => {
+      return el.description.includes(item.description);
+    });
+    this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', item.description)
   }
 
   getClassifications(){
@@ -263,9 +285,11 @@ export class HomeComponent implements OnInit{
     this.dataSource = this.data;
     this.listTipi = this.data;
     this.listClassifications = [];
+    this.listDescriptions = [];
     this.getClassifications();
     this.renderer2.setProperty( this.inputRefClassification.nativeElement,'value', '')
     this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', '')
+    this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', '')
   }
 
   onFileChange(event: any): void {

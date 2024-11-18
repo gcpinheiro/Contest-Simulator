@@ -17,8 +17,8 @@
               placeholder="Pesquisar por TIPI"
               (focus)="onFocusInput('tipiInput')"
               (blur)="onBlurInput('tipiInput')"
-              (input)="onInputChange(inputRef.value)"
-              #inputRef
+              (input)="onInputChange(inputRefTipi.value)"
+              #inputRefTipi
             >
             <div class="box-list" *ngIf="showBoxListTipi">
               <ng-container *ngFor="let item of listTipi">
@@ -42,6 +42,23 @@
               <ng-container *ngFor="let item of listClassifications">
                 <div class="item" (click)="selectClassification(item)">
                   <span>{{item}}</span>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+          <div class="box-input">
+            <input
+              type="text"
+              placeholder="Pesquisar por descrição"
+              (focus)="onFocusInput('descriptionInput')"
+              (blur)="onBlurInput('descriptionInput')"
+              (input)="onInputChangeDescription(inputRefDescription.value)"
+              #inputRefDescription
+            >
+            <div class="box-list" *ngIf="showBoxListDescription">
+              <ng-container *ngFor="let item of listDescriptions">
+                <div class="item" (click)="selectDescription(item)">
+                  <span>{{item.description}}</span>
                 </div>
               </ng-container>
             </div>

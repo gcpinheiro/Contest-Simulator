@@ -16,8 +16,14 @@ export interface ProductTaxInfo {
   ipi: number;
   tax_reform: TaxReform;
   legal_basis: string;
+  input: 'Entradas' | 'Saídas';
 }
 
 export interface ResponseFiles{
   data: ProductTaxInfo[];
+}
+
+export enum InputTypes{
+  Inputs = 'Entradas',
+  Outputs = 'Saídas'
 }
