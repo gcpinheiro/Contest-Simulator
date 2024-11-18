@@ -210,3 +210,35 @@ tr.example-element-row:not(.example-expanded-row):active {
     gap: 8px;
   }
 }
+
+
+.button-sort{
+  border: none;
+  background-color: transparent;
+
+  img{
+    width: 20px;
+    cursor: pointer;
+  }
+}
+
+.cell-with-sort{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.input-element{
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.input{
+  background-color: rgba(21, 171, 81, 1);
+}
+
+.output{
+  background-color: rgba(249, 64, 64, 1);
+}
+

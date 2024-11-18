@@ -9,6 +9,7 @@ import { HeaderTablePipe } from '../../shared/pipes/header-table.pipe';
 import { CommonModule } from '@angular/common';
 import { PercentNumberTablePipe } from '../../shared/pipes/percent-number-table.pipe';
 import { ProductTaxInfo, ResponseFiles } from './taxReform';
+type columnName = 'input' |'tipi' |'classification' | 'description' | 'icms' | 'pis' | 'cofins' | 'ipi';
 
 @Component({
   selector: 'app-home',
@@ -27,7 +28,7 @@ import { ProductTaxInfo, ResponseFiles } from './taxReform';
 export class HomeComponent implements OnInit{
   private renderer2 = inject(Renderer2);
   file: File | null = null;
-  columnsToDisplay = ['input','tipi','classification', 'description', 'icms', 'pis', 'cofins', 'ipi'];
+  columnsToDisplay: columnName[] = ['input','tipi','classification', 'description', 'icms', 'pis', 'cofins', 'ipi'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: any | null;
   showBoxListTipi: boolean = false;
@@ -41,16 +42,26 @@ export class HomeComponent implements OnInit{
   listClassifications: string[] = [];
   listDescriptions: ProductTaxInfo[] = [];
   currentItem: ProductTaxInfo = {} as ProductTaxInfo;
+  hasSorted = {
+    icms: false,
+    pis: false,
+    ipi: false,
+    cofins: false,
+    classification: false,
+    input: false,
+    tipi: false,
+    description: false,
+  }
   data: ProductTaxInfo[] = [
     {
       input: 'Entradas',
       classification: 'Alimentos',
       tipi: '1006.20.10',
       description: 'Arroz descascado (arroz cargo ou castanho) - Parboilizado',
-      icms: 0.115,
+      icms: 0.915,
       pis: 0.2,
-      cofins: 0.05,
-      ipi: 0.187,
+      cofins: 0.95,
+      ipi: 0.687,
       tax_reform: {
         ibs: 0.45,
         ibs_percentage_reeducation: 0.6,
@@ -65,9 +76,9 @@ export class HomeComponent implements OnInit{
       classification: 'Alimentos',
       tipi: '1006.20.20',
       description: 'Arroz descascado (arroz cargo ou castanho) - Não parboilizado',
-      icms: 0.115,
-      pis: 0.2,
-      cofins: 0.05,
+      icms: 0.515,
+      pis: 0.3,
+      cofins: 0.15,
       ipi: 0.187,
       tax_reform: {
         ibs: 0.45,
@@ -83,10 +94,10 @@ export class HomeComponent implements OnInit{
       classification: 'Alimentos',
       tipi: '1006.30.11',
       description: 'Arroz semibranqueado ou branqueado, mesmo polido ou brunido (glaciado*) - Parboilizado - Polido ou brunido',
-      icms: 0.115,
-      pis: 0.2,
-      cofins: 0.05,
-      ipi: 0.187,
+      icms: 0.215,
+      pis: 0.5,
+      cofins: 0.75,
+      ipi: 0.467,
       tax_reform: {
         ibs: 0.45,
         ibs_percentage_reeducation: 0.6,
@@ -101,10 +112,10 @@ export class HomeComponent implements OnInit{
       classification: 'Dispositivos médicos',
       tipi: '9018.90.95',
       description: 'Clipe venoso',
-      icms: 0.115,
-      pis: 0.2,
-      cofins: 0.05,
-      ipi: 0.187,
+      icms: 0.415,
+      pis: 0.8,
+      cofins: 0.25,
+      ipi: 0.987,
       tax_reform: {
         ibs: 0.45,
         ibs_percentage_reeducation: 0.6,
@@ -302,4 +313,31 @@ export class HomeComponent implements OnInit{
       console.error('Nenhum arquivo selecionado.');
     }
   }
+
+  sortByColumn(columnName: columnName){
+    console.log("columnName: ", columnName)
+    const data = this.dataSource;
+    this.dataSource = [];
+
+    if(columnName === 'ipi' || columnName === 'cofins' || columnName === 'pis' || columnName === 'icms'){
+      if(this.hasSorted[columnName]){
+        this.dataSource = [...data.sort((a, b) => Number(b[columnName]) - Number(a[columnName]))];
+      }
+      else{
+        this.dataSource = [...data.sort((a, b) => Number(a[columnName]) - Number(b[columnName]))];
+      }
+      this.hasSorted[columnName] = !this.hasSorted[columnName];
+    }
+
+    else{
+      if(this.hasSorted[columnName]){
+        this.dataSource = [...data.sort((a, b) => a[columnName].localeCompare(b[columnName]))];
+      }
+      else{
+        this.dataSource = [...data.sort((a, b) => b[columnName].localeCompare(a[columnName]))];
+      }
+      this.hasSorted[columnName] = !this.hasSorted[columnName];
+    }
+  }
 }
+
