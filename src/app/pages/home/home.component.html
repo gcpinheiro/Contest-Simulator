@@ -8,7 +8,27 @@
     <input type="file" #fileInput (change)="onFileChange($event)" style="display: none" />
   </div>
   <main>
-    <section class="box-table">
+    <div class="tabs">
+      <div class="option" [ngClass]="{'active': currentTab === 'home'? true:  false}" (click)="toggleTab('home')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5.49824 12.4956V8.74564H8.49824V12.4956C8.49824 12.9081 8.83574 13.2456 9.24824 13.2456H11.4982C11.9107 13.2456 12.2482 12.9081 12.2482 12.4956V7.24564H13.5232C13.8682 7.24564 14.0332 6.81814 13.7707 6.59314L7.50074 0.945645C7.21574 0.690645 6.78074 0.690645 6.49574 0.945645L0.225743 6.59314C-0.0292575 6.81814 0.128242 7.24564 0.473242 7.24564H1.74824V12.4956C1.74824 12.9081 2.08574 13.2456 2.49824 13.2456H4.74824C5.16074 13.2456 5.49824 12.9081 5.49824 12.4956Z" fill="black" fill-opacity="0.8"/>
+          </svg>
+        <span>Home</span>
+      </div>
+      <div class="option" [ngClass]="{'active': currentTab === 'graphics'? true:  false}" (click)="toggleTab('graphics')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5.49824 12.4956V8.74564H8.49824V12.4956C8.49824 12.9081 8.83574 13.2456 9.24824 13.2456H11.4982C11.9107 13.2456 12.2482 12.9081 12.2482 12.4956V7.24564H13.5232C13.8682 7.24564 14.0332 6.81814 13.7707 6.59314L7.50074 0.945645C7.21574 0.690645 6.78074 0.690645 6.49574 0.945645L0.225743 6.59314C-0.0292575 6.81814 0.128242 7.24564 0.473242 7.24564H1.74824V12.4956C1.74824 12.9081 2.08574 13.2456 2.49824 13.2456H4.74824C5.16074 13.2456 5.49824 12.9081 5.49824 12.4956Z" fill="black" fill-opacity="0.8"/>
+          </svg>
+        <span>Gráficos</span>
+      </div>
+      <div class="option" [ngClass]="{'active': currentTab === 'calculadora'? true:  false}" (click)="toggleTab('calculadora')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5.49824 12.4956V8.74564H8.49824V12.4956C8.49824 12.9081 8.83574 13.2456 9.24824 13.2456H11.4982C11.9107 13.2456 12.2482 12.9081 12.2482 12.4956V7.24564H13.5232C13.8682 7.24564 14.0332 6.81814 13.7707 6.59314L7.50074 0.945645C7.21574 0.690645 6.78074 0.690645 6.49574 0.945645L0.225743 6.59314C-0.0292575 6.81814 0.128242 7.24564 0.473242 7.24564H1.74824V12.4956C1.74824 12.9081 2.08574 13.2456 2.49824 13.2456H4.74824C5.16074 13.2456 5.49824 12.9081 5.49824 12.4956Z" fill="black" fill-opacity="0.8"/>
+          </svg>
+        <span>Calculadora</span>
+      </div>
+    </div>
+    <section class="box-table"  *ngIf="currentTab === 'home'">
       <div class="box-filters">
         <div class="container-inputs">
           <div class="box-input">
@@ -68,7 +88,9 @@
       </div>
       <table mat-table
             [dataSource]="dataSource" multiTemplateDataRows
-            class="mat-elevation-z8">
+            class="mat-elevation-z8 full"
+            [style.width]="'500px'">
+
         @for (column of columnsToDisplay; track column) {
           <ng-container matColumnDef="{{column}}">
             <th mat-header-cell *matHeaderCellDef>
@@ -158,7 +180,7 @@
       </table>
 
     </section>
-    <section class="graphics">
+    <section class="graphics" *ngIf="currentTab === 'graphics'">
       <p-chart type="bar" [data]="dataChart" [options]="options" height="100%"/>
     </section>
   </main>

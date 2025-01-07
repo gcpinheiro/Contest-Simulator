@@ -42,6 +42,7 @@ export class HomeComponent implements OnInit{
   listClassifications: string[] = [];
   listDescriptions: ProductTaxInfo[] = [];
   currentItem: ProductTaxInfo = {} as ProductTaxInfo;
+  currentTab = 'home';
   hasSorted = {
     icms: false,
     pis: false,
@@ -338,6 +339,10 @@ export class HomeComponent implements OnInit{
       }
       this.hasSorted[columnName] = !this.hasSorted[columnName];
     }
+  }
+
+  toggleTab(tab: string){
+    this.currentTab = tab;
   }
 }
 
