@@ -9,7 +9,7 @@ import { HeaderTablePipe } from '../../shared/pipes/header-table.pipe';
 import { CommonModule } from '@angular/common';
 import { PercentNumberTablePipe } from '../../shared/pipes/percent-number-table.pipe';
 import { ProductTaxInfo, ResponseFiles } from './taxReform';
-type columnName = 'input' |'tipi' |'classification' | 'description' | 'icms' | 'pis' | 'cofins' | 'ipi';
+type columnName = 'input' |'tipi' |'classification' | 'description' | 'icms' | 'valor' | 'pis' | 'cofins' | 'ipi';
 
 @Component({
   selector: 'app-home',
@@ -28,7 +28,7 @@ type columnName = 'input' |'tipi' |'classification' | 'description' | 'icms' | '
 export class HomeComponent implements OnInit{
   private renderer2 = inject(Renderer2);
   file: File | null = null;
-  columnsToDisplay: columnName[] = ['input','tipi','classification', 'description', 'icms', 'pis', 'cofins', 'ipi'];
+  columnsToDisplay: columnName[] = ['input','tipi','classification', 'description','valor', 'icms', 'pis', 'cofins', 'ipi'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: any | null;
   showBoxListTipi: boolean = false;
@@ -52,6 +52,7 @@ export class HomeComponent implements OnInit{
     input: false,
     tipi: false,
     description: false,
+    valor: false
   }
   data: ProductTaxInfo[] = [
     {
@@ -60,6 +61,7 @@ export class HomeComponent implements OnInit{
       tipi: '1006.20.10',
       description: 'Arroz descascado (arroz cargo ou castanho) - Parboilizado',
       icms: 0.915,
+      valor: 10.915,
       pis: 0.2,
       cofins: 0.95,
       ipi: 0.687,
@@ -81,6 +83,7 @@ export class HomeComponent implements OnInit{
       pis: 0.3,
       cofins: 0.15,
       ipi: 0.187,
+      valor: 10.915,
       tax_reform: {
         ibs: 0.45,
         ibs_percentage_reeducation: 0.6,
@@ -99,6 +102,7 @@ export class HomeComponent implements OnInit{
       pis: 0.5,
       cofins: 0.75,
       ipi: 0.467,
+      valor: 10.915,
       tax_reform: {
         ibs: 0.45,
         ibs_percentage_reeducation: 0.6,
@@ -117,6 +121,7 @@ export class HomeComponent implements OnInit{
       pis: 0.8,
       cofins: 0.25,
       ipi: 0.987,
+      valor: 10.915,
       tax_reform: {
         ibs: 0.45,
         ibs_percentage_reeducation: 0.6,
@@ -320,7 +325,7 @@ export class HomeComponent implements OnInit{
     const data = this.dataSource;
     this.dataSource = [];
 
-    if(columnName === 'ipi' || columnName === 'cofins' || columnName === 'pis' || columnName === 'icms'){
+    if(columnName === 'ipi' || columnName === 'valor' || columnName === 'cofins' || columnName === 'pis' || columnName === 'icms'){
       if(this.hasSorted[columnName]){
         this.dataSource = [...data.sort((a, b) => Number(b[columnName]) - Number(a[columnName]))];
       }

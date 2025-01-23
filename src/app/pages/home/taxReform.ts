@@ -17,6 +17,7 @@ export interface ProductTaxInfo {
   tax_reform: TaxReform;
   legal_basis: string;
   input: 'Entradas' | 'Saídas';
+  valor: number;
 }
 
 export interface ResponseFiles{
