@@ -10,6 +10,8 @@ import { CommonModule } from '@angular/common';
 import { PercentNumberTablePipe } from '../../shared/pipes/percent-number-table.pipe';
 import { ProductTaxInfo, ResponseFiles } from './taxReform';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
+
 type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' ;
 
 @Component({
@@ -55,6 +57,7 @@ export class HomeComponent implements OnInit{
   listDescriptions: ProductTaxInfo[] = [];
   currentItem: ProductTaxInfo = {} as ProductTaxInfo;
   currentTab = 'home';
+  dataFile: any[] = [];
   hasSorted = {
     icms: false,
     pis: false,
@@ -316,16 +319,6 @@ export class HomeComponent implements OnInit{
     this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', '')
   }
 
-  onFileChange(event: any): void {
-    const file = event.target.files[0];
-
-    if (file) {
-      this.file = file;
-      console.log('Arquivo selecionado:', file.name);
-    } else {
-      console.error('Nenhum arquivo selecionado.');
-    }
-  }
 
   sortByColumn(columnName: columnName){
     console.log("columnName: ", columnName)
@@ -383,6 +376,57 @@ export class HomeComponent implements OnInit{
     const value = +el.value || 0;
 
     return (1 - (ibs + cbs + is)) * value;
+  }
+
+  onFileChange(event: any): void {
+    const target: DataTransfer = <DataTransfer>(event.target);
+    if (target.files.length !== 1) {
+      console.error('Por favor, selecione apenas um arquivo.');
+      return;
+    }
+
+    const file: File = target.files[0];
+    const reader: FileReader = new FileReader();
+
+    reader.onload = (e: any) => {
+      const binaryStr: string = e.target.result;
+      const workbook: XLSX.WorkBook = XLSX.read(binaryStr, { type: 'binary' });
+
+      // Supondo que o arquivo tenha dados na primeira planilha
+      const firstSheetName: string = workbook.SheetNames[0];
+      const worksheet: XLSX.WorkSheet = workbook.Sheets[firstSheetName];
+
+      // Converte os dados em um array de objetos
+      this.dataFile = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Opcional: Transforme a matriz em objetos com regras personalizadas
+      this.transformToObjects();
+    };
+
+    reader.readAsBinaryString(file);
+  }
+
+  transformToObjects(): void {
+    if (this.dataFile.length > 0) {
+      const headers = this.dataFile[0]; // Primeira linha como cabeçalhos
+      const rows = this.dataFile.slice(1); // Dados a partir da segunda linha
+
+      this.dataFile = rows.map((row: any[]) => {
+        const obj: any = {};
+        headers.forEach((header: string, index: number) => {
+          obj[header] = row[index]; // Atribui o valor de cada coluna à propriedade correspondente
+        });
+        return obj; // Retorna o objeto gerado a partir da linha
+      });
+
+      console.log('Dados transformados em objetos:', this.dataFile);
+    } else {
+      console.error('Nenhum dado encontrado na planilha.');
+    }
+  }
+
+  clearFile(): void {
+    this.dataFile = []; // Limpa os dados processados
   }
 }
 

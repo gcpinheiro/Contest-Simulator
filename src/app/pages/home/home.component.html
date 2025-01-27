@@ -39,12 +39,12 @@
         </div>
 
         <div class="buttons">
-          <button (click)="fileInput.click()" class="button-icon">
+          <button (click)="clearFilters()" class="button-icon">
             <img src="images/filter.svg" alt="">
             <span>Filtros</span>
           </button>
 
-          <button (click)="clearFilters()" class="button-icon">
+          <button (click)="clearFile()" class="button-icon">
             <img src="images/trash.svg" alt="">
             <span>Deletar</span>
           </button>
@@ -58,7 +58,7 @@
               <img src="images/upload.svg" alt="">
               <span>Arquivo</span>
             </button>
-            <input type="file" #fileInput (change)="onFileChange($event)" style="display: none" />
+            <input type="file" #fileInput (change)="onFileChange($event)" style="display: none" accept=".xlsx, .xls"/>
           </div>
         </div>
       </div>
