@@ -17,7 +17,11 @@ export class HeaderTablePipe implements PipeTransform {
       case 'cofins': return 'COFINS';
       case 'ipi': return 'IPI';
       case 'input': return 'E/S'
-      case 'valor': return 'Valor'
+      case 'value': return 'Valor'
+      case 'ibs': return 'IBS'
+      case 'cbs': return 'CBS'
+      case 'is': return 'IS'
+
     }
     return null;
   }

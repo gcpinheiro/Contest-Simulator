@@ -14,10 +14,14 @@ export interface ProductTaxInfo {
   pis: number;
   cofins: number;
   ipi: number;
-  tax_reform: TaxReform;
+  ibs: number;
+  ibs_percentage_reeducation: number;
+  cbs: number;
+  cbs_percentage_reeducation: number;
+  is: number;
   legal_basis: string;
   input: 'Entradas' | 'Saídas';
-  valor: number;
+  value: number;
 }
 
 export interface ResponseFiles{

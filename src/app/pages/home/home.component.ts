@@ -9,12 +9,23 @@ import { HeaderTablePipe } from '../../shared/pipes/header-table.pipe';
 import { CommonModule } from '@angular/common';
 import { PercentNumberTablePipe } from '../../shared/pipes/percent-number-table.pipe';
 import { ProductTaxInfo, ResponseFiles } from './taxReform';
-type columnName = 'input' |'tipi' |'classification' | 'description' | 'icms' | 'valor' | 'pis' | 'cofins' | 'ipi';
+import { FormsModule } from '@angular/forms';
+type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' ;
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, MatTableModule, MatButtonModule, MatIconModule, ChartModule, HeaderTablePipe, PercentNumberTablePipe],
+  imports: [
+    CommonModule,
+    HeaderComponent,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    ChartModule,
+    HeaderTablePipe,
+    PercentNumberTablePipe,
+    FormsModule
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   animations: [
@@ -28,7 +39,7 @@ type columnName = 'input' |'tipi' |'classification' | 'description' | 'icms' | '
 export class HomeComponent implements OnInit{
   private renderer2 = inject(Renderer2);
   file: File | null = null;
-  columnsToDisplay: columnName[] = ['input','tipi','classification', 'description','valor', 'icms', 'pis', 'cofins', 'ipi'];
+  columnsToDisplay: columnName[] = ['input','tipi','classification', 'description', 'ibs' , 'cbs' , 'is', 'value'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: any | null;
   showBoxListTipi: boolean = false;
@@ -37,6 +48,7 @@ export class HomeComponent implements OnInit{
   @ViewChild('inputRefTipi') inputRefTipi!: ElementRef;
   @ViewChild('inputRefClassification') inputRefClassification!: ElementRef;
   @ViewChild('inputRefDescription') inputRefDescription!: ElementRef;
+  @ViewChild('arrowDropdown') arrowDropdown!: ElementRef;
   listTipi: ProductTaxInfo[] = [];
   dataSource: ProductTaxInfo[] = [];
   listClassifications: string[] = [];
@@ -52,7 +64,10 @@ export class HomeComponent implements OnInit{
     input: false,
     tipi: false,
     description: false,
-    valor: false
+    value: false,
+    ibs: false,
+    cbs: false,
+    is: false
   }
   data: ProductTaxInfo[] = [
     {
@@ -61,17 +76,15 @@ export class HomeComponent implements OnInit{
       tipi: '1006.20.10',
       description: 'Arroz descascado (arroz cargo ou castanho) - Parboilizado',
       icms: 0.915,
-      valor: 10.915,
+      value: 100,
       pis: 0.2,
       cofins: 0.95,
       ipi: 0.687,
-      tax_reform: {
-        ibs: 0.45,
-        ibs_percentage_reeducation: 0.6,
-        cbs: 2.75,
-        cbs_percentage_reeducation: 0.4,
-        is: 1
-      },
+      ibs: 0.15,
+      ibs_percentage_reeducation: 0.6,
+      cbs: 2.75,
+      cbs_percentage_reeducation: 0.4,
+      is: 1,
       legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
     },
     {
@@ -83,14 +96,12 @@ export class HomeComponent implements OnInit{
       pis: 0.3,
       cofins: 0.15,
       ipi: 0.187,
-      valor: 10.915,
-      tax_reform: {
-        ibs: 0.45,
-        ibs_percentage_reeducation: 0.6,
-        cbs: 2.75,
-        cbs_percentage_reeducation: 0.4,
-        is: 1
-      },
+      value: 30.87,
+      ibs: 0.45,
+      ibs_percentage_reeducation: 0.6,
+      cbs: 2.75,
+      cbs_percentage_reeducation: 0.4,
+      is: 1,
       legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
     },
     {
@@ -102,14 +113,12 @@ export class HomeComponent implements OnInit{
       pis: 0.5,
       cofins: 0.75,
       ipi: 0.467,
-      valor: 10.915,
-      tax_reform: {
-        ibs: 0.45,
-        ibs_percentage_reeducation: 0.6,
-        cbs: 2.75,
-        cbs_percentage_reeducation: 0.4,
-        is: 1
-      },
+      value: 21.45,
+      ibs: 0.45,
+      ibs_percentage_reeducation: 0.6,
+      cbs: 2.75,
+      cbs_percentage_reeducation: 0.4,
+      is: 1,
       legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
     },
     {
@@ -121,14 +130,12 @@ export class HomeComponent implements OnInit{
       pis: 0.8,
       cofins: 0.25,
       ipi: 0.987,
-      valor: 10.915,
-      tax_reform: {
-        ibs: 0.45,
-        ibs_percentage_reeducation: 0.6,
-        cbs: 2.75,
-        cbs_percentage_reeducation: 0.4,
-        is: 1
-      },
+      value: 1451.24,
+      ibs: 0.45,
+      ibs_percentage_reeducation: 0.6,
+      cbs: 2.75,
+      cbs_percentage_reeducation: 0.4,
+      is: 1,
       legal_basis: 'Benefício Redução 60% Alíquota do IBS e CBS - Projeto da Lei Complementar n° 68/2024 - Anexo IV - Dispositvos Médicos Submetidos à Redução de 60% das Alíquotas de IBS e da CBS '
     }
   ]
@@ -325,7 +332,7 @@ export class HomeComponent implements OnInit{
     const data = this.dataSource;
     this.dataSource = [];
 
-    if(columnName === 'ipi' || columnName === 'valor' || columnName === 'cofins' || columnName === 'pis' || columnName === 'icms'){
+    if(columnName === 'ipi' || columnName === 'value' || columnName === 'cofins' || columnName === 'pis' || columnName === 'icms' || columnName === 'ibs' || columnName === 'cbs' || columnName === 'is'){
       if(this.hasSorted[columnName]){
         this.dataSource = [...data.sort((a, b) => Number(b[columnName]) - Number(a[columnName]))];
       }
@@ -349,5 +356,35 @@ export class HomeComponent implements OnInit{
   toggleTab(tab: string){
     this.currentTab = tab;
   }
+
+  dropdownStates: { [key: number]: boolean } = {};
+
+  toggleDropdown(index: number, el: any): void {
+    if(!this.dropdownStates[index]){
+      this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(180deg)')
+    }
+
+    else{
+      this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(0deg)')
+    }
+
+    this.dropdownStates[index] = !this.dropdownStates[index];
+
+  }
+
+  isDropdownOpen(index: number): boolean {
+    return this.dropdownStates[index] || false;
+  }
+
+  calculateTotal(el: any): number {
+    const ibs = +el.ibs || 0; // Converte para número ou usa 0 se for undefined/null
+    const cbs = +el.cbs || 0;
+    const is = +el.is || 0;
+    const value = +el.value || 0;
+
+    return (1 - (ibs + cbs + is)) * value;
+  }
 }
+
+
 

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
   <!-- Arrow Up -->
-  <path d="M24 10L16 18H32L24 10Z" fill="#fff"/>
+  <path d="M24 10L16 18H32L24 10Z" fill="#2C3E50"/>
   <!-- Arrow Down -->
-  <path d="M24 38L32 30H16L24 38Z" fill="#fff"/>
+  <path d="M24 38L32 30H16L24 38Z" fill="#2C3E50"/>
 </svg>
