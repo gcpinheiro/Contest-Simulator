@@ -7,11 +7,7 @@ import {MatTableModule} from '@angular/material/table';
 import { ChartModule } from 'primeng/chart';
 import { HeaderTablePipe } from '../../shared/pipes/header-table.pipe';
 import { CommonModule } from '@angular/common';
-import { PercentMaskPipe  } from '../../shared/pipes/percent-number-table.pipe';
-import { ProductTaxInfo, ResponseFiles } from './taxReform';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import * as XLSX from 'xlsx';
-import * as DadosReforma from './../../../../public/file/forma.json'
 import { HomeService } from './home.service';
 import { DataReport, ResponseReport } from './home';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
@@ -31,7 +27,6 @@ type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'c
     FormsModule,
     ReactiveFormsModule,
     NgxMaskDirective,
-    PercentMaskPipe
   ],
   providers: [
     provideNgxMask(),
@@ -52,39 +47,18 @@ export class HomeComponent implements OnInit{
   private fb = inject(FormBuilder);
   file: File | null = null;
   columnsToDisplay: columnName[] = ['input','tipi','classification', 'description', 'ibs' , 'cbs' , 'is', 'value'];
-  columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: any | null;
   showBoxListTipi: boolean = false;
-  showBoxListClassification: boolean = false;
-  showBoxListDescription: boolean = false;
   @ViewChild('inputRefTipi') inputRefTipi!: ElementRef;
   @ViewChild('inputRefClassification') inputRefClassification!: ElementRef;
   @ViewChild('inputRefDescription') inputRefDescription!: ElementRef;
   @ViewChild('arrowDropdown') arrowDropdown!: ElementRef;
-  listTipi: ProductTaxInfo[] = [];
-  dataSource: ProductTaxInfo[] = [];
-  listClassifications: string[] = [];
-  listDescriptions: ProductTaxInfo[] = [];
-  currentItem: ProductTaxInfo = {} as ProductTaxInfo;
+
   currentTab = 'home';
   dataForma: any[] =[];
   dataReportReponse: ResponseReport = {} as ResponseReport;
   dataReport: any = {};
   fileName = '';
-  hasSorted = {
-    icms: false,
-    pis: false,
-    ipi: false,
-    cofins: false,
-    classification: false,
-    input: false,
-    tipi: false,
-    description: false,
-    value: false,
-    ibs: false,
-    cbs: false,
-    is: false
-  }
 
   options: any;
   dataChart = {
@@ -158,7 +132,6 @@ export class HomeComponent implements OnInit{
       console.log("this.CBS: ", this.IS)
     })
 
-    this.getClassifications();
     const documentStyle = getComputedStyle(document.documentElement);
       const textColor = documentStyle.getPropertyValue('--text-color');
       const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
@@ -199,138 +172,6 @@ export class HomeComponent implements OnInit{
 
         }
       };
-
-      // this.dataChart.labels[0] = this.data[0].description;
-      this.listTipi = this.dataSource;
-  }
-
-  selecItem(item: ProductTaxInfo){
-    const maxLength = 50;
-    if(this.currentItem.tipi !== item.tipi){
-      this.dataChart.labels[0] = item.description.length > maxLength
-      ? item.description.substring(0, maxLength) + '...'
-      : item.description;
-      this.dataChart = { ...this.dataChart };
-      this.currentItem = item;
-    }
-  }
-
-  onBlurInput(inputName: string){
-    setTimeout(() => {
-      if(inputName === 'tipiInput'){
-        this.showBoxListTipi = false;
-      }
-
-      else if(inputName === 'classificationInput'){
-        this.showBoxListClassification = false;
-      }
-      else if(inputName === 'descriptionInput'){
-        this.showBoxListDescription = false;
-      }
-    }, 100);
-  }
-
-  onInputChange(tipi: any){
-    this.listTipi = this.dataSource.filter((el) => el.tipi.includes(tipi))
-  }
-
-  onInputChangeDescription(value: any){
-    this.listDescriptions = this.dataSource.filter((el) => el.description.includes(value))
-  }
-
-  onFocusInput(inputName: string){
-    if(inputName === 'tipiInput'){
-      this.listTipi = this.dataSource.filter((el) => el.tipi.includes(''))
-      this.showBoxListTipi = true;
-    }
-
-    else if(inputName === 'classificationInput'){
-      this.showBoxListClassification = true;
-    }
-
-    else if(inputName === 'descriptionInput'){
-      this.listDescriptions = this.dataSource.filter((el) => el.description.includes(''))
-      this.showBoxListDescription = true;
-    }
-  }
-
-  selectTipi(item: ProductTaxInfo){
-    this.dataSource = [];
-    // this.dataSource = this.data.filter((el) => {
-    //   return el.tipi.includes(item.tipi);
-    // });
-    this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', item.tipi)
-  }
-
-  selectClassification(item: string){
-    if(this.inputRefDescription.nativeElement.value.length > 0 || this.inputRefTipi.nativeElement.value.length > 0){
-      this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', '')
-      this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', '')
-    }
-    this.dataSource = [];
-    // this.dataSource = this.data.filter((el) => {
-    //   return el.classification.includes(item);
-    // });
-    this.renderer2.setProperty( this.inputRefClassification.nativeElement,'value', item)
-  }
-
-  selectDescription(item: ProductTaxInfo){
-    this.dataSource = [];
-    // this.dataSource = this.data.filter((el) => {
-    //   return el.description.includes(item.description);
-    // });
-    this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', item.description)
-  }
-
-  getClassifications(){
-    // this.data.forEach((el) => {
-    //   let alreadyHasClassification = false;
-    //   this.listClassifications.forEach((elList) => {
-    //     alreadyHasClassification = el.classification === elList;
-    //   });
-
-    //   if(!alreadyHasClassification){
-    //     this.listClassifications.push(el.classification);
-    //   }
-    // })
-  }
-
-  clearFilters(){
-    // this.dataSource = this.data;
-    // this.listTipi = this.data;
-    this.listClassifications = [];
-    this.listDescriptions = [];
-    this.getClassifications();
-    this.renderer2.setProperty( this.inputRefClassification.nativeElement,'value', '')
-    this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', '')
-    this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', '')
-  }
-
-
-  sortByColumn(columnName: columnName){
-    console.log("columnName: ", columnName)
-    const data = this.dataSource;
-    this.dataSource = [];
-
-    if(columnName === 'ipi' || columnName === 'value' || columnName === 'cofins' || columnName === 'pis' || columnName === 'icms' || columnName === 'ibs' || columnName === 'cbs' || columnName === 'is'){
-      if(this.hasSorted[columnName]){
-        this.dataSource = [...data.sort((a, b) => Number(b[columnName]) - Number(a[columnName]))];
-      }
-      else{
-        this.dataSource = [...data.sort((a, b) => Number(a[columnName]) - Number(b[columnName]))];
-      }
-      this.hasSorted[columnName] = !this.hasSorted[columnName];
-    }
-
-    else{
-      if(this.hasSorted[columnName]){
-        this.dataSource = [...data.sort((a, b) => a[columnName].localeCompare(b[columnName]))];
-      }
-      else{
-        this.dataSource = [...data.sort((a, b) => b[columnName].localeCompare(a[columnName]))];
-      }
-      this.hasSorted[columnName] = !this.hasSorted[columnName];
-    }
   }
 
   toggleTab(tab: string){
@@ -460,12 +301,8 @@ export class HomeComponent implements OnInit{
     return parseFloat((calcBase * tax).toFixed(2));
   }
 
-  // Muda de página
   changePage(classification: string, currentPage: number, totalPages: number) {
     this.getData(classification, currentPage, totalPages);
-    // if (newPage >= 1 && newPage <= this.totalPages) {
-    //   this.currentPage = newPage;
-    // }
   }
 
   onAliquotaChange(value: number): void {
@@ -478,18 +315,17 @@ export class HomeComponent implements OnInit{
 
     let value = inputElement.value;
 
-    // Permite a digitação da vírgula sem travar
     value = value.replace(/[^\d,]/g, ''); // Remove qualquer caractere que não seja número ou vírgula
 
-    // Atualiza o FormControl sem interferir na digitação
     this.aliquotaForm.get(field)?.setValue(value, { emitEvent: false });
 
-    // Converte para número quando necessário
     const numericValue = parseFloat(value.replace(',', '.')); // Substitui ',' por '.' apenas internamente
     if (!isNaN(numericValue)) {
       this.aliquotaForm.get(field)?.setValue(numericValue, { emitEvent: false, onlySelf: true });
     }
   }
+
+  sortByColumn(el:any){}
 
 }
 

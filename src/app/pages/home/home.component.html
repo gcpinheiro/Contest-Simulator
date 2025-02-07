@@ -65,7 +65,6 @@
             </div>
           </form>
         </div>
-         <button (click)="clearFilters()" class="clear-button">Limpar</button>
       </div>
 
       <div class="box-content">
@@ -88,9 +87,9 @@
                       <th>
                         <span class="cell-with-sort">
                           {{column | headerTable}}
-                          <button class="button-sort" (click)="sortByColumn(column)">
+                          <!-- <button class="button-sort" (click)="sortByColumn(column)">
                             <img src="images/sort.svg" alt="">
-                          </button>
+                          </button> -->
                         </span>
                       </th>
                     }
@@ -115,9 +114,9 @@
                 </tbody>
               </table>
               <div class="pagination">
-                <button (click)="changePage(classification, dataReport[classification].currentPage - 1, dataReport[classification].limit)" [disabled]="dataReport[classification].currentPage === 1">Anterior</button>
-                <span>Página {{ dataReport[classification].currentPage }} de {{ dataReport[classification].limit }}</span>
-                <button (click)="changePage(classification, dataReport[classification].currentPage + 1, dataReport[classification].limit)" [disabled]="dataReport[classification].currentPage === dataReport[classification].limit">Próxima</button>
+                <button (click)="changePage(classification, dataReport[classification].currentPage - 1, dataReport[classification].totalPages)" [disabled]="dataReport[classification].currentPage === 1">Anterior</button>
+                <span>Página {{ dataReport[classification].currentPage }} de {{ dataReport[classification].totalPages }}</span>
+                <button (click)="changePage(classification, dataReport[classification].currentPage + 1, dataReport[classification].totalPages)" [disabled]="dataReport[classification].currentPage === dataReport[classification].totalPages">Próxima</button>
               </div>
             </div>
           }
