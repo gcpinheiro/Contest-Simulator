@@ -62,10 +62,10 @@ export class HomeComponent implements OnInit{
   listDescriptions: ProductTaxInfo[] = [];
   currentItem: ProductTaxInfo = {} as ProductTaxInfo;
   currentTab = 'home';
-  dataFile: any[] = [];
   dataForma: any[] =[];
   dataReportReponse: ResponseReport = {} as ResponseReport;
   dataReport: any = {};
+  fileName = '';
   hasSorted = {
     icms: false,
     pis: false,
@@ -360,6 +360,8 @@ export class HomeComponent implements OnInit{
       this.dropdownStates = {};
     }
     const file: File = event.target.files[0];
+    console.log("File: ", file)
+    this.fileName = file.name;
     if (file) {
       this.homeService.uploadFileReport(file).subscribe(response => {
         this.dataReportReponse = response;
@@ -408,16 +410,6 @@ export class HomeComponent implements OnInit{
     })
   }
 
-  readFile(file: File) {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const text = e.target.result;
-      this.dataFile = this.parseCSV(text);
-      console.log('Parsed File Data:', this.dataFile);
-    };
-    reader.readAsText(file);
-  }
-
   parseCSV(csvText: string): any[] {
     const lines = csvText.split('\n');
     const headers = lines[0].split(',');
@@ -432,17 +424,12 @@ export class HomeComponent implements OnInit{
     });
   }
 
-  clearFile(): void {
-    this.dataFile = [];
-  }
-
   convertPercentage(value: string | number): number | string {
     if (typeof value === 'string' && value.endsWith('%')) {
-      // Remove o '%' e substitui ',' por '.' para converter corretamente
       const numericValue = parseFloat(value.replace('%', '').replace(',', '.'));
       return isNaN(numericValue) ? value : numericValue;
     }
-    return value; // Retorna o valor original caso não seja um percentual
+    return value;
   }
 
   calcTax(tax: number, value: number, reduction: number){

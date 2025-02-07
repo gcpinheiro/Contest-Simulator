@@ -1,12 +1,5 @@
 <div class="container">
   <app-header></app-header>
-  <!-- <div class="box-button-upload">
-    <button (click)="fileInput.click()">
-      <img src="images/upload.svg" alt="">
-      <span>Carregar arquivo</span>
-    </button>
-    <input type="file" #fileInput (change)="onFileChange($event)" style="display: none" />
-  </div> -->
   <main>
     <div class="tabs">
       <div class="option" [ngClass]="{'active': currentTab === 'home'? true:  false}" (click)="toggleTab('home')">
@@ -21,39 +14,18 @@
           </svg>
         <span>Gráficos</span>
       </div>
-      <!-- <div class="option" [ngClass]="{'active': currentTab === 'calculadora'? true:  false}" (click)="toggleTab('calculadora')">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5.49824 12.4956V8.74564H8.49824V12.4956C8.49824 12.9081 8.83574 13.2456 9.24824 13.2456H11.4982C11.9107 13.2456 12.2482 12.9081 12.2482 12.4956V7.24564H13.5232C13.8682 7.24564 14.0332 6.81814 13.7707 6.59314L7.50074 0.945645C7.21574 0.690645 6.78074 0.690645 6.49574 0.945645L0.225743 6.59314C-0.0292575 6.81814 0.128242 7.24564 0.473242 7.24564H1.74824V12.4956C1.74824 12.9081 2.08574 13.2456 2.49824 13.2456H4.74824C5.16074 13.2456 5.49824 12.9081 5.49824 12.4956Z" fill="black" fill-opacity="0.8"/>
-          </svg>
-        <span>Calculadora</span>
-      </div> -->
     </div>
     <section class="box-table"  *ngIf="currentTab === 'home'">
       <div class="box-options">
         <div class="box-infos">
           <div class="names">
             <h1>Simulador</h1>
-            <span class="client-name">Empresa A</span>
+            <span class="client-name">{{fileName}}</span>
           </div>
-          <span class="file-name">Planilha_Excel_EmpresaA.csv</span>
+          <!-- <span class="file-name">{{fileName}}</span> -->
         </div>
 
         <div class="buttons">
-          <!-- <button class="button-icon">
-            <img src="images/filter.svg" alt="">
-            <span>Filtros</span>
-          </button> -->
-
-          <!-- <button (click)="clearFile()" class="button-icon">
-            <img src="images/trash.svg" alt="">
-            <span>Deletar</span>
-          </button> -->
-
-          <!-- <button (click)="fileInput.click()" class="button-icon pdf-button">
-            <img src="images/cloud.svg" alt="">
-            <span>PDF</span>
-          </button> -->
-
           <div class="box-button-upload">
             <button (click)="fileInputReforma.click()" class="button-icon button-upload">
               <img src="images/upload.svg" alt="">
@@ -69,75 +41,11 @@
             </button>
             <input type="file" #fileInput (change)="uploadFileReport($event)" style="display: none" accept=".csv"/>
           </div>
-
-
         </div>
       </div>
 
-
       <div class="box-filters">
         <div class="container-inputs">
-          <!-- <div class="box-input">
-            <input
-              type="text"
-              placeholder="Pesquisar por TIPI"
-              (focus)="onFocusInput('tipiInput')"
-              (blur)="onBlurInput('tipiInput')"
-              (input)="onInputChange(inputRefTipi.value)"
-              #inputRefTipi
-            >
-            <div class="box-list" *ngIf="showBoxListTipi">
-              <ng-container *ngFor="let item of listTipi">
-                <div class="item" (click)="selectTipi(item)">
-                  <span>{{item.tipi}}</span>
-                </div>
-              </ng-container>
-            </div>
-          </div> -->
-
-          <!-- <div class="box-input">
-            <input
-              type="text"
-              placeholder="Pesquisar por classificação"
-              (focus)="onFocusInput('classificationInput')"
-              (blur)="onBlurInput('classificationInput')"
-              (input)="onInputChange(inputRefClassification.value)"
-              #inputRefClassification
-            >
-            <div class="box-list" *ngIf="showBoxListClassification">
-              <ng-container *ngFor="let item of listClassifications">
-                <div class="item" (click)="selectClassification(item)">
-                  <span>{{item}}</span>
-                </div>
-              </ng-container>
-            </div>
-          </div> -->
-          <!-- <div class="box-input">
-            <input
-              type="text"
-              placeholder="Pesquisar por descrição"
-              (focus)="onFocusInput('descriptionInput')"
-              (blur)="onBlurInput('descriptionInput')"
-              (input)="onInputChangeDescription(inputRefDescription.value)"
-              #inputRefDescription
-            >
-            <div class="box-list" *ngIf="showBoxListDescription">
-              <ng-container *ngFor="let item of listDescriptions">
-                <div class="item" (click)="selectDescription(item)">
-                  <span>{{item.description}}</span>
-                </div>
-              </ng-container>
-            </div>
-          </div> -->
-          <!-- <div class="box-input">
-            <input type="number" name="" id="" placeholder="Alíquota" [(ngModel)]="ALIQUOTA">
-          </div>
-          <div class="box-input">
-            <input type="number" name="" id="" placeholder="Proporção IBS" [(ngModel)]="IBS">
-          </div>
-          <div class="box-input">
-            <input type="number" name="" id="" placeholder="Proporção CBS" [(ngModel)]="CBS">
-          </div> -->
           <form [formGroup]="aliquotaForm">
             <div class="box-input">
               <label for="">Alíquota</label>
