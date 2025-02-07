@@ -9,9 +9,11 @@ import { HeaderTablePipe } from '../../shared/pipes/header-table.pipe';
 import { CommonModule } from '@angular/common';
 import { PercentNumberTablePipe } from '../../shared/pipes/percent-number-table.pipe';
 import { ProductTaxInfo, ResponseFiles } from './taxReform';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
-
+import * as DadosReforma from './../../../../public/file/forma.json'
+import { HomeService } from './home.service';
+import { DataReport, ResponseReport } from './home';
 type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' ;
 
 @Component({
@@ -26,7 +28,8 @@ type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'c
     ChartModule,
     HeaderTablePipe,
     PercentNumberTablePipe,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -40,6 +43,8 @@ type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'c
 })
 export class HomeComponent implements OnInit{
   private renderer2 = inject(Renderer2);
+  private homeService = inject(HomeService);
+  private fb = inject(FormBuilder);
   file: File | null = null;
   columnsToDisplay: columnName[] = ['input','tipi','classification', 'description', 'ibs' , 'cbs' , 'is', 'value'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
@@ -58,6 +63,9 @@ export class HomeComponent implements OnInit{
   currentItem: ProductTaxInfo = {} as ProductTaxInfo;
   currentTab = 'home';
   dataFile: any[] = [];
+  dataForma: any[] =[];
+  dataReportReponse: ResponseReport = {} as ResponseReport;
+  dataReport: any = {};
   hasSorted = {
     icms: false,
     pis: false,
@@ -72,76 +80,6 @@ export class HomeComponent implements OnInit{
     cbs: false,
     is: false
   }
-  data: ProductTaxInfo[] = [
-    {
-      input: 'Entradas',
-      classification: 'Alimentos',
-      tipi: '1006.20.10',
-      description: 'Arroz descascado (arroz cargo ou castanho) - Parboilizado',
-      icms: 0.915,
-      value: 100,
-      pis: 0.2,
-      cofins: 0.95,
-      ipi: 0.687,
-      ibs: 0.15,
-      ibs_percentage_reeducation: 0.6,
-      cbs: 2.75,
-      cbs_percentage_reeducation: 0.4,
-      is: 1,
-      legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
-    },
-    {
-      input: 'Entradas',
-      classification: 'Alimentos',
-      tipi: '1006.20.20',
-      description: 'Arroz descascado (arroz cargo ou castanho) - Não parboilizado',
-      icms: 0.515,
-      pis: 0.3,
-      cofins: 0.15,
-      ipi: 0.187,
-      value: 30.87,
-      ibs: 0.45,
-      ibs_percentage_reeducation: 0.6,
-      cbs: 2.75,
-      cbs_percentage_reeducation: 0.4,
-      is: 1,
-      legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
-    },
-    {
-      input: 'Saídas',
-      classification: 'Alimentos',
-      tipi: '1006.30.11',
-      description: 'Arroz semibranqueado ou branqueado, mesmo polido ou brunido (glaciado*) - Parboilizado - Polido ou brunido',
-      icms: 0.215,
-      pis: 0.5,
-      cofins: 0.75,
-      ipi: 0.467,
-      value: 21.45,
-      ibs: 0.45,
-      ibs_percentage_reeducation: 0.6,
-      cbs: 2.75,
-      cbs_percentage_reeducation: 0.4,
-      is: 1,
-      legal_basis: 'Benefício Alíquota "Zero" - Projeto da Lei Complementar n° 68/2024 - Anexo I - Produtos destinados à alimentação humana submetido à redução a zero das alíquotas do IBS e da CBS'
-    },
-    {
-      input: 'Saídas',
-      classification: 'Dispositivos médicos',
-      tipi: '9018.90.95',
-      description: 'Clipe venoso',
-      icms: 0.415,
-      pis: 0.8,
-      cofins: 0.25,
-      ipi: 0.987,
-      value: 1451.24,
-      ibs: 0.45,
-      ibs_percentage_reeducation: 0.6,
-      cbs: 2.75,
-      cbs_percentage_reeducation: 0.4,
-      is: 1,
-      legal_basis: 'Benefício Redução 60% Alíquota do IBS e CBS - Projeto da Lei Complementar n° 68/2024 - Anexo IV - Dispositvos Médicos Submetidos à Redução de 60% das Alíquotas de IBS e da CBS '
-    }
-  ]
 
   options: any;
   dataChart = {
@@ -162,6 +100,11 @@ export class HomeComponent implements OnInit{
     ]
   };
 
+  aliquotaForm!: FormGroup;
+  CBS = 0;
+  IBS = 0;
+  IS = 0;
+
   ngAfterViewInit() {
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {3
 
@@ -169,8 +112,32 @@ export class HomeComponent implements OnInit{
   }
 
   ngOnInit(): void {
-    this.dataSource = this.data;
-    this.listDescriptions = this.data;
+    this.aliquotaForm = this.fb.group({
+      ALIQUOTA: [0],
+      IBS: [0],
+      CBS: [0],
+      IS: [0]
+    });
+    this.aliquotaForm.get('IBS')?.valueChanges.subscribe((ibsValue) => {
+      console.log("ibsValue: ", ibsValue)
+
+      this.IBS = ((this.aliquotaForm.get('ALIQUOTA')?.value / 100) * (ibsValue/100))
+    })
+
+    this.aliquotaForm.get('CBS')?.valueChanges.subscribe((cbsValue) => {
+      console.log("cbsValue: ", cbsValue)
+
+      this.CBS = ((this.aliquotaForm.get('ALIQUOTA')?.value / 100) * (cbsValue/100))
+      console.log("this.CBS: ", this.CBS)
+    })
+
+    this.aliquotaForm.get('IS')?.valueChanges.subscribe((isValue) => {
+      console.log("cbsValue: ", isValue)
+
+      this.IS = ((this.aliquotaForm.get('ALIQUOTA')?.value / 100) * (isValue/100))
+      console.log("this.CBS: ", this.IS)
+    })
+
     this.getClassifications();
     const documentStyle = getComputedStyle(document.documentElement);
       const textColor = documentStyle.getPropertyValue('--text-color');
@@ -213,7 +180,7 @@ export class HomeComponent implements OnInit{
         }
       };
 
-      this.dataChart.labels[0] = this.data[0].description;
+      // this.dataChart.labels[0] = this.data[0].description;
       this.listTipi = this.dataSource;
   }
 
@@ -269,9 +236,9 @@ export class HomeComponent implements OnInit{
 
   selectTipi(item: ProductTaxInfo){
     this.dataSource = [];
-    this.dataSource = this.data.filter((el) => {
-      return el.tipi.includes(item.tipi);
-    });
+    // this.dataSource = this.data.filter((el) => {
+    //   return el.tipi.includes(item.tipi);
+    // });
     this.renderer2.setProperty( this.inputRefTipi.nativeElement,'value', item.tipi)
   }
 
@@ -281,36 +248,36 @@ export class HomeComponent implements OnInit{
       this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', '')
     }
     this.dataSource = [];
-    this.dataSource = this.data.filter((el) => {
-      return el.classification.includes(item);
-    });
+    // this.dataSource = this.data.filter((el) => {
+    //   return el.classification.includes(item);
+    // });
     this.renderer2.setProperty( this.inputRefClassification.nativeElement,'value', item)
   }
 
   selectDescription(item: ProductTaxInfo){
     this.dataSource = [];
-    this.dataSource = this.data.filter((el) => {
-      return el.description.includes(item.description);
-    });
+    // this.dataSource = this.data.filter((el) => {
+    //   return el.description.includes(item.description);
+    // });
     this.renderer2.setProperty( this.inputRefDescription.nativeElement,'value', item.description)
   }
 
   getClassifications(){
-    this.data.forEach((el) => {
-      let alreadyHasClassification = false;
-      this.listClassifications.forEach((elList) => {
-        alreadyHasClassification = el.classification === elList;
-      });
+    // this.data.forEach((el) => {
+    //   let alreadyHasClassification = false;
+    //   this.listClassifications.forEach((elList) => {
+    //     alreadyHasClassification = el.classification === elList;
+    //   });
 
-      if(!alreadyHasClassification){
-        this.listClassifications.push(el.classification);
-      }
-    })
+    //   if(!alreadyHasClassification){
+    //     this.listClassifications.push(el.classification);
+    //   }
+    // })
   }
 
   clearFilters(){
-    this.dataSource = this.data;
-    this.listTipi = this.data;
+    // this.dataSource = this.data;
+    // this.listTipi = this.data;
     this.listClassifications = [];
     this.listDescriptions = [];
     this.getClassifications();
@@ -355,6 +322,7 @@ export class HomeComponent implements OnInit{
   toggleDropdown(index: number, el: any): void {
     if(!this.dropdownStates[index]){
       this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(180deg)')
+      this.getData(el, 1, 10);
     }
 
     else{
@@ -363,70 +331,134 @@ export class HomeComponent implements OnInit{
 
     this.dropdownStates[index] = !this.dropdownStates[index];
 
+    console.log("Detalhes: ", this.dataReport)
+
   }
 
-  isDropdownOpen(index: number): boolean {
+  isDropdownOpen(index: number, classification: string): boolean {
     return this.dropdownStates[index] || false;
   }
 
   calculateTotal(el: any): number {
-    const ibs = +el.ibs || 0; // Converte para número ou usa 0 se for undefined/null
-    const cbs = +el.cbs || 0;
-    const is = +el.is || 0;
-    const value = +el.value || 0;
+    const baseCalculo = el.VALUE * (1 - el)
+    return baseCalculo;
+   }
 
-    return (1 - (ibs + cbs + is)) * value;
-  }
-
-  onFileChange(event: any): void {
-    const target: DataTransfer = <DataTransfer>(event.target);
-    if (target.files.length !== 1) {
-      console.error('Por favor, selecione apenas um arquivo.');
-      return;
-    }
-
-    const file: File = target.files[0];
-    const reader: FileReader = new FileReader();
-
-    reader.onload = (e: any) => {
-      const binaryStr: string = e.target.result;
-      const workbook: XLSX.WorkBook = XLSX.read(binaryStr, { type: 'binary' });
-
-      // Supondo que o arquivo tenha dados na primeira planilha
-      const firstSheetName: string = workbook.SheetNames[0];
-      const worksheet: XLSX.WorkSheet = workbook.Sheets[firstSheetName];
-
-      // Converte os dados em um array de objetos
-      this.dataFile = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-      // Opcional: Transforme a matriz em objetos com regras personalizadas
-      this.transformToObjects();
-    };
-
-    reader.readAsBinaryString(file);
-  }
-
-  transformToObjects(): void {
-    if (this.dataFile.length > 0) {
-      const headers = this.dataFile[0]; // Primeira linha como cabeçalhos
-      const rows = this.dataFile.slice(1); // Dados a partir da segunda linha
-
-      this.dataFile = rows.map((row: any[]) => {
-        const obj: any = {};
-        headers.forEach((header: string, index: number) => {
-          obj[header] = row[index]; // Atribui o valor de cada coluna à propriedade correspondente
-        });
-        return obj; // Retorna o objeto gerado a partir da linha
+  uploadFileRules(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.homeService.uploadFileRules(file).subscribe(response => {
+        console.log('File uploaded successfully', response);
       });
-
-      console.log('Dados transformados em objetos:', this.dataFile);
-    } else {
-      console.error('Nenhum dado encontrado na planilha.');
     }
+  }
+
+  uploadFileReport(event: any) {
+    if(this.dataReportReponse && this.dataReport){
+      this.dataReport = {};
+      this.dataReportReponse = {} as ResponseReport;
+      this.dropdownStates = {};
+    }
+    const file: File = event.target.files[0];
+    if (file) {
+      this.homeService.uploadFileReport(file).subscribe(response => {
+        this.dataReportReponse = response;
+        let object: DataReport = {} as DataReport;
+        this.dataReportReponse.classifications.forEach((el) => {
+          this.dataReport[el] = object;
+        })
+        // console.log('****************dataReport', this.dataReport);
+
+        // this.readFile(file);
+      });
+    }
+  }
+
+  getData(classification: string, currentPage: number, size: number){
+    this.homeService.getData(this.dataReportReponse._id, classification, currentPage, size).subscribe((data) => {
+      this.dataReport[classification]=data;
+      this.dataReport[classification].ncms.forEach((item: Record<string, any>) => {
+        Object.keys(item).forEach((key) => {
+          // console.log("Fora do IF:", key, item[key]);
+
+          if (['CBS', 'CONFINS', 'IBS', 'IPI', 'IS', 'ISS', 'PIS', 'VALUE'].includes(key)) {
+            const res = this.convertPercentage(item[key]);
+            // console.log("Verificando o retorno:", res);
+
+            // Atualiza diretamente o valor no objeto
+            if(key === 'VALUE'){
+              item[key] = Number(res);
+            }
+            else{
+              item[key] = Number(res) / 100;
+            }
+
+          }
+        });
+
+
+        Object.keys(item['reductions']).forEach((key) => {
+          // console.log("Fora do IF:", key, item[key]);
+
+          const res = this.convertPercentage(item['reductions'][key]);
+
+            item['reductions'][key] = Number(res) / 100;
+        });
+      });
+    })
+  }
+
+  readFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const text = e.target.result;
+      this.dataFile = this.parseCSV(text);
+      console.log('Parsed File Data:', this.dataFile);
+    };
+    reader.readAsText(file);
+  }
+
+  parseCSV(csvText: string): any[] {
+    const lines = csvText.split('\n');
+    const headers = lines[0].split(',');
+
+    return lines.slice(1).filter(line => line.trim() !== '').map(line => {
+      const values = line.split(',');
+      const obj: any = {};
+      headers.forEach((header, index) => {
+        obj[header.trim()] = values[index]?.trim();
+      });
+      return obj;
+    });
   }
 
   clearFile(): void {
-    this.dataFile = []; // Limpa os dados processados
+    this.dataFile = [];
+  }
+
+  convertPercentage(value: string | number): number | string {
+    if (typeof value === 'string' && value.endsWith('%')) {
+      // Remove o '%' e substitui ',' por '.' para converter corretamente
+      const numericValue = parseFloat(value.replace('%', '').replace(',', '.'));
+      return isNaN(numericValue) ? value : numericValue;
+    }
+    return value; // Retorna o valor original caso não seja um percentual
+  }
+
+  calcTax(tax: number, value: number, reduction: number){
+    const calcBase = (value * (1 - reduction ))
+
+    console.log("************Resultado: ", calcBase * tax)
+
+    return parseFloat((calcBase * tax).toFixed(2));
+  }
+
+  // Muda de página
+  changePage(classification: string, currentPage: number, totalPages: number) {
+    this.getData(classification, currentPage, totalPages);
+    // if (newPage >= 1 && newPage <= this.totalPages) {
+    //   this.currentPage = newPage;
+    // }
   }
 }
 

@@ -39,34 +39,45 @@
         </div>
 
         <div class="buttons">
-          <button (click)="clearFilters()" class="button-icon">
+          <!-- <button class="button-icon">
             <img src="images/filter.svg" alt="">
             <span>Filtros</span>
-          </button>
+          </button> -->
 
-          <button (click)="clearFile()" class="button-icon">
+          <!-- <button (click)="clearFile()" class="button-icon">
             <img src="images/trash.svg" alt="">
             <span>Deletar</span>
-          </button>
+          </button> -->
 
-          <button (click)="fileInput.click()" class="button-icon pdf-button">
+          <!-- <button (click)="fileInput.click()" class="button-icon pdf-button">
             <img src="images/cloud.svg" alt="">
             <span>PDF</span>
-          </button>
+          </button> -->
+
+          <div class="box-button-upload">
+            <button (click)="fileInputReforma.click()" class="button-icon button-upload">
+              <img src="images/upload.svg" alt="">
+              <span>Arquivo de regras</span>
+            </button>
+            <input type="file" #fileInputReforma (change)="uploadFileRules($event)" style="display: none" accept=".csv"/>
+          </div>
+
           <div class="box-button-upload">
             <button (click)="fileInput.click()" class="button-icon button-upload">
               <img src="images/upload.svg" alt="">
               <span>Arquivo</span>
             </button>
-            <input type="file" #fileInput (change)="onFileChange($event)" style="display: none" accept=".xlsx, .xls"/>
+            <input type="file" #fileInput (change)="uploadFileReport($event)" style="display: none" accept=".csv"/>
           </div>
+
+
         </div>
       </div>
 
 
-      <!-- <div class="box-filters">
+      <div class="box-filters">
         <div class="container-inputs">
-          <div class="box-input">
+          <!-- <div class="box-input">
             <input
               type="text"
               placeholder="Pesquisar por TIPI"
@@ -82,9 +93,9 @@
                 </div>
               </ng-container>
             </div>
-          </div>
+          </div> -->
 
-          <div class="box-input">
+          <!-- <div class="box-input">
             <input
               type="text"
               placeholder="Pesquisar por classificação"
@@ -100,8 +111,8 @@
                 </div>
               </ng-container>
             </div>
-          </div>
-          <div class="box-input">
+          </div> -->
+          <!-- <div class="box-input">
             <input
               type="text"
               placeholder="Pesquisar por descrição"
@@ -117,181 +128,94 @@
                 </div>
               </ng-container>
             </div>
+          </div> -->
+          <!-- <div class="box-input">
+            <input type="number" name="" id="" placeholder="Alíquota" [(ngModel)]="ALIQUOTA">
           </div>
+          <div class="box-input">
+            <input type="number" name="" id="" placeholder="Proporção IBS" [(ngModel)]="IBS">
+          </div>
+          <div class="box-input">
+            <input type="number" name="" id="" placeholder="Proporção CBS" [(ngModel)]="CBS">
+          </div> -->
+          <form [formGroup]="aliquotaForm">
+            <div class="box-input">
+              <label for="">Alíquota</label>
+              <input type="number" placeholder="Alíquota" formControlName="ALIQUOTA">
+            </div>
+            <div class="box-input">
+              <label for="">Proporção IBS</label>
+              <input type="number" placeholder="Proporção IBS" formControlName="IBS">
+            </div>
+            <div class="box-input">
+              <label for="">Proporção CBS</label>
+              <input type="number" placeholder="Proporção CBS" formControlName="CBS">
+            </div>
+            <div class="box-input">
+              <label for="">Proporção IS</label>
+              <input type="number" placeholder="Proporção CBS" formControlName="IS">
+            </div>
+          </form>
         </div>
          <button (click)="clearFilters()" class="clear-button">Limpar</button>
-      </div> -->
-      <div class="box-table-content">
-        <table class="table">
-          <thead>
-            <tr>
-              @for (column of columnsToDisplay; track column) {
-                <th>
-                  <span class="cell-with-sort">
-                    {{column | headerTable}}
-                    <button class="button-sort" (click)="sortByColumn(column)">
-                      <img src="images/sort.svg" alt="">
-                    </button>
-                  </span>
-                </th>
-              }
-              <th></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            @for (el of data; track el; let i = $index; ) {
-              <tr (click)="selecItem(el)" [ngClass]="{ 'even-row': i % 2 === 0, 'odd-row': i % 2 !== 0 }">
-                <td  (click)="selecItem(el)">
-                  <span class="input-element" [ngClass]="el.input === 'Entradas' ? 'input': 'output'">{{el.input }} </span>
-                </td>
-                <td>{{el.tipi}}</td>
-                <td>{{el.classification}}</td>
-                <td>{{el.description}}</td>
-                <td><input class="input-edit" type="number" [(ngModel)]="el.ibs" [ngClass]="{'negative-cash-flow' : el.input === 'Saídas'}"></td>
-                <td><input class="input-edit" type="number" [(ngModel)]="el.cbs" [ngClass]="{'negative-cash-flow' : el.input === 'Saídas'}"></td>
-                <td><input class="input-edit" type="number" [(ngModel)]="el.is" [ngClass]="{'negative-cash-flow' : el.input === 'Saídas'}"></td>
-                <td [ngClass]="{'negative-cash-flow' : el.input === 'Saídas'}">{{ calculateTotal(el) | currency: 'BRL' }}</td>
-                <!-- <td>{{ el.value }}</td> -->
-                <td >
-                  <button class="dropdown-toggle" (click)="toggleDropdown(i, el)" #arrowDropdown>
-                    <!-- Ícone de dropdown -->
-                    <img
-                      src="images/arrow-down.svg"
-                      alt="Toggle"
-                    >
-                  </button>
-                </td>
-              </tr>
-
-              <tr [style.display]="isDropdownOpen(i)? '' : 'none'" class="dropdown-row">
-                <td colspan="9">
-                  <div class="dropdown-content">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>ICMS</th>
-                          <th>PIS</th>
-                          <th>COFINS</th>
-                          <th>IPI</th>
-                          <th>Valor</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                        <td>{{el.icms}}</td>
-                        <td>{{el.pis}}</td>
-                        <td>{{el.cofins}}</td>
-                        <td>{{el.ipi}}</td>
-                        <td>{{el.value}}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
       </div>
 
-      <!-- <table mat-table
-            [dataSource]="dataSource" multiTemplateDataRows
-            class="mat-elevation-z8 full"
-            >
+      <div class="box-content">
+        @if(dataReportReponse.classifications){
+          @for (classification of dataReportReponse.classifications; track classification; let i = $index; ) {
+            <div class="card" >
+              <span>{{classification}}</span>
+              <button class="dropdown-toggle" (click)="toggleDropdown(i, classification)" #arrowDropdown>
+                <!-- Ícone de dropdown -->
+                <img
+                  src="images/arrow-down.svg"
+                  alt="Toggle"
+                >
+              </button>
+            </div>
+            <div class="content" [style.display]="isDropdownOpen(i, classification)? '' : 'none'" class="dropdown-row">
+              <table class="table">
+                <thead>
+                  <tr>
+                    @for (column of columnsToDisplay; track column) {
+                      <th>
+                        <span class="cell-with-sort">
+                          {{column | headerTable}}
+                          <button class="button-sort" (click)="sortByColumn(column)">
+                            <img src="images/sort.svg" alt="">
+                          </button>
+                        </span>
+                      </th>
+                    }
+                  </tr>
+                </thead>
 
-        @for (column of columnsToDisplay; track column) {
-          <ng-container matColumnDef="{{column}}">
-            <th mat-header-cell *matHeaderCellDef>
-              <span class="cell-with-sort">
-                {{column | headerTable}}
-                <button class="button-sort" (click)="sortByColumn(column)">
-                  <img src="images/sort.svg" alt="">
-                </button>
-              </span>
-            </th>
-
-            <th mat-header-cell *matHeaderCellDef> {{column | headerTable}} </th>
-            <ng-container *ngIf="column === 'icms' || column === 'pis' || column === 'cofins' || column === 'ipi'; else otherCell">
-              <td mat-cell *matCellDef="let element" (click)="selecItem(element)">
-                {{element[column] | percentNumberTable}}
-              </td>
-            </ng-container>
-            <ng-container *ngIf="column === 'valor'">
-              <td mat-cell *matCellDef="let element" (click)="selecItem(element)">
-                <input class="input-edit" type="text" [value]="element[column] | currency: 'BRL'">
-                 {{element[column] | currency: 'BRL'}}
-              </td>
-            </ng-container>
-            <ng-template #otherCell>
-              <ng-container *ngIf="column !== 'input'; else inputCell">
-                <td mat-cell *matCellDef="let element" (click)="selecItem(element)"> {{element[column] }} </td>
-              </ng-container>
-
-              <ng-template #inputCell>
-                <td mat-cell *matCellDef="let element" (click)="selecItem(element)">
-                  <span class="input-element" [ngClass]="element[column] === 'Entradas' ? 'input': 'output'">{{element[column] }} </span>
-                </td>
-              </ng-template>
-
-
-            </ng-template>
-          </ng-container>
-        }
-        <ng-container matColumnDef="expand">
-          <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
-          <td mat-cell *matCellDef="let element">
-            <button mat-icon-button aria-label="expand row" (click)="(expandedElement = expandedElement === element ? null : element); $event.stopPropagation()">
-              @if (expandedElement === element) {
-                <mat-icon>keyboard_arrow_up</mat-icon>
-              } @else {
-                <mat-icon>keyboard_arrow_down</mat-icon>
-              }
-            </button>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="expandedDetail">
-          <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length">
-            <div class="example-element-detail"
-                [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
-              <div class="box-new-taxs">
-                <ng-container *ngIf="element.tax_reform as tax_reform">
-                  <div class="item">
-                    <h4>IBS</h4>
-                    <span>{{tax_reform.ibs | percent }}</span>
-                  </div>
-                  <div class="item">
-                    <h4>Redução % IBS</h4>
-                    <span>{{tax_reform.ibs_percentage_reeducation | percent}}</span>
-                  </div>
-                  <div class="item">
-                    <h4>CBS</h4>
-                    <span>{{tax_reform.cbs | percent}}</span>
-                  </div>
-                  <div class="item">
-                    <h4>Redução % CBS</h4>
-                    <span>{{tax_reform.cbs_percentage_reeducation | percent }}</span>
-                  </div>
-                  <div class="item">
-                    <h4>IS</h4>
-                    <span>{{tax_reform.is | percent}}</span>
-                  </div>
-                </ng-container>
+                <tbody>
+                  @for (el of dataReport[classification].ncms; track el; let i = $index; ) {
+                    <tr [ngClass]="{ 'even-row': i % 2 === 0, 'odd-row': i % 2 !== 0 }">
+                      <td>
+                        <span class="input-element" [ngClass]="el.OPERATION === 'ENTRADA' ? 'input': 'output'">{{el.OPERATION }} </span>
+                      </td>
+                      <td>{{el.NCM}}</td>
+                      <td>{{el.CLASSIFICATION}}</td>
+                      <td>{{el.DESCRIPTION}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(IBS, el.VALUE, el.reductions['reduction_ibs']) | currency: 'BRL'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(CBS, el.VALUE, el.reductions['reduction_cbs']) | currency: 'BRL'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(IS, el.VALUE, el.reductions['reduction_is']) | currency: 'BRL'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{ el.VALUE | currency: 'BRL' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              <div class="pagination">
+                <button (click)="changePage(classification, dataReport[classification].currentPage - 1, dataReport[classification].limit)" [disabled]="dataReport[classification].currentPage === 1">Anterior</button>
+                <span>Página {{ dataReport[classification].currentPage }} de {{ dataReport[classification].limit }}</span>
+                <button (click)="changePage(classification, dataReport[classification].currentPage + 1, dataReport[classification].limit)" [disabled]="dataReport[classification].currentPage === dataReport[classification].limit">Próxima</button>
               </div>
             </div>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
-        <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;"
-            class="example-element-row"
-            [class.example-expanded-row]="expandedElement === element"
-            (click)="expandedElement = expandedElement === element ? null : element">
-        </tr>
-        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
-      </table> -->
-
+          }
+        }
+      </div>
     </section>
     <section class="graphics" *ngIf="currentTab === 'graphics'">
       <p-chart type="bar" [data]="dataChart" [options]="options" height="100%"/>

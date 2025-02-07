@@ -101,21 +101,51 @@
             }
           }
         }
+
+        form{
+          display: flex;
+          gap: 8px;
+        }
       }
 
       .clear-button{
         background-color: $color-white;
         border-radius: 8px;
-        border: 1px solid $color-primary;
+        // border: 1px solid $color-primary;
         cursor: pointer;
         font-size: 16px;
         font-weight: 500;
         width: 140px;
         height: 40px;
+        border: none;
 
         &:hover{
           background-color: $color-primary;
           color: $color-white;
+        }
+      }
+    }
+
+    .box-content{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .card{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        background-color: $color-gray;
+        height: 80px;
+
+        span{
+          font-size: 16px;
+          /* font-weight: bolder; */
+          text-transform: capitalize;
         }
       }
     }
@@ -339,10 +369,35 @@ table {
 
 .dropdown-row{
   transition: .2s ease-in;
-  background-color: red;
 }
 
 
 .negative-cash-flow{
   color: rgba(249, 64, 64, 1);
+}
+
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  margin: 0 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-weight: bold;
 }
