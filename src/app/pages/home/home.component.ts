@@ -7,13 +7,14 @@ import {MatTableModule} from '@angular/material/table';
 import { ChartModule } from 'primeng/chart';
 import { HeaderTablePipe } from '../../shared/pipes/header-table.pipe';
 import { CommonModule } from '@angular/common';
-import { PercentNumberTablePipe } from '../../shared/pipes/percent-number-table.pipe';
+import { PercentMaskPipe  } from '../../shared/pipes/percent-number-table.pipe';
 import { ProductTaxInfo, ResponseFiles } from './taxReform';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import * as DadosReforma from './../../../../public/file/forma.json'
 import { HomeService } from './home.service';
 import { DataReport, ResponseReport } from './home';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' ;
 
 @Component({
@@ -27,9 +28,13 @@ type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'c
     MatIconModule,
     ChartModule,
     HeaderTablePipe,
-    PercentNumberTablePipe,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgxMaskDirective,
+    PercentMaskPipe
+  ],
+  providers: [
+    provideNgxMask(),
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -118,9 +123,24 @@ export class HomeComponent implements OnInit{
       CBS: [0],
       IS: [0]
     });
+
+    this.aliquotaForm.get('ALIQUOTA')?.valueChanges.subscribe((aliquotaValue) => {
+      console.log("ibsValue: ", aliquotaValue)
+
+      if(!aliquotaValue){
+        this.IBS = 0;
+        this.CBS = 0;
+        this.IS = 0;
+        this.aliquotaForm.patchValue({
+          IBS: 0,
+          CBS: 0,
+          IS: 0
+        });
+      }
+
+    })
     this.aliquotaForm.get('IBS')?.valueChanges.subscribe((ibsValue) => {
       console.log("ibsValue: ", ibsValue)
-
       this.IBS = ((this.aliquotaForm.get('ALIQUOTA')?.value / 100) * (ibsValue/100))
     })
 
@@ -447,6 +467,30 @@ export class HomeComponent implements OnInit{
     //   this.currentPage = newPage;
     // }
   }
+
+  onAliquotaChange(value: number): void {
+    this.aliquotaForm.get('ALIQUOTA')?.setValue(value);
+  }
+
+  onPercentInput(field: string, event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    if (!inputElement) return;
+
+    let value = inputElement.value;
+
+    // Permite a digitação da vírgula sem travar
+    value = value.replace(/[^\d,]/g, ''); // Remove qualquer caractere que não seja número ou vírgula
+
+    // Atualiza o FormControl sem interferir na digitação
+    this.aliquotaForm.get(field)?.setValue(value, { emitEvent: false });
+
+    // Converte para número quando necessário
+    const numericValue = parseFloat(value.replace(',', '.')); // Substitui ',' por '.' apenas internamente
+    if (!isNaN(numericValue)) {
+      this.aliquotaForm.get(field)?.setValue(numericValue, { emitEvent: false, onlySelf: true });
+    }
+  }
+
 }
 
 

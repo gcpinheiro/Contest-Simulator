@@ -48,20 +48,20 @@
         <div class="container-inputs">
           <form [formGroup]="aliquotaForm">
             <div class="box-input">
-              <label for="">Alíquota</label>
-              <input type="number" placeholder="Alíquota" formControlName="ALIQUOTA">
+              <label for="">Alíquota </label>
+              <input type="text" placeholder="Alíquota" formControlName="ALIQUOTA" mask="percent" suffix="%" decimalMarker="," >
             </div>
             <div class="box-input">
               <label for="">Proporção IBS</label>
-              <input type="number" placeholder="Proporção IBS" formControlName="IBS">
+              <input type="text" placeholder="Proporção IBS" formControlName="IBS" mask="percent" suffix="%" decimalMarker="," >
             </div>
             <div class="box-input">
               <label for="">Proporção CBS</label>
-              <input type="number" placeholder="Proporção CBS" formControlName="CBS">
+              <input type="text" placeholder="Proporção CBS" formControlName="CBS" mask="percent" suffix="%" decimalMarker="," >
             </div>
             <div class="box-input">
               <label for="">Proporção IS</label>
-              <input type="number" placeholder="Proporção CBS" formControlName="IS">
+              <input type="text" placeholder="Proporção CBS" formControlName="IS" mask="percent" suffix="%" decimalMarker="," >
             </div>
           </form>
         </div>
@@ -74,7 +74,6 @@
             <div class="card" >
               <span>{{classification}}</span>
               <button class="dropdown-toggle" (click)="toggleDropdown(i, classification)" #arrowDropdown>
-                <!-- Ícone de dropdown -->
                 <img
                   src="images/arrow-down.svg"
                   alt="Toggle"

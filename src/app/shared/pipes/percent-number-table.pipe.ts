@@ -2,17 +2,17 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { isNumber } from 'util';
 
 @Pipe({
-  name: 'percentNumberTable',
+  name: 'percentMask',
   standalone: true
 })
-export class PercentNumberTablePipe implements PipeTransform {
+export class PercentMaskPipe  implements PipeTransform {
 
-  transform(value: unknown, ...args: unknown[]): unknown {
-    if (typeof value === 'number' && !isNaN(value)) {
-      return `${(value * 100)}%`;
-    } else {
-      return '0%';
+  transform(value: any): string {
+    if (value != null) {
+      const formattedValue = parseFloat(value).toFixed(2); // Formatação de até 2 casas decimais
+      return `${formattedValue}%`;
     }
+    return value;
   }
 
 }

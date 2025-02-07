@@ -5,7 +5,11 @@ import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient } from '@angular/common/http';
-// import { NgxMaskModule, IConfig } from 'ngx-mask';
+import { NgxMaskConfig, provideEnvironmentNgxMask } from 'ngx-mask';
+
+const maskConfig: Partial<NgxMaskConfig> = {
+  validation: false,
+};
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,7 +17,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(),
     provideAnimationsAsync(),
-    provideHttpClient()
-    // NgxMaskModule.forRoot()
+    provideHttpClient(),
+    provideEnvironmentNgxMask({
+      thousandSeparator: '.',
+      decimalMarker: ','
+    })
   ]
 };
