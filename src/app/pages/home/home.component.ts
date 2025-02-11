@@ -9,8 +9,12 @@ import { HeaderTablePipe } from '../../shared/pipes/header-table.pipe';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HomeService } from './home.service';
-import { DataReport, ResponseReport } from './home';
+import { Report, ResponseReport } from './home';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
+
+registerLocaleData(localePt);
 type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' ;
 
 @Component({
@@ -53,6 +57,10 @@ export class HomeComponent implements OnInit{
   @ViewChild('inputRefClassification') inputRefClassification!: ElementRef;
   @ViewChild('inputRefDescription') inputRefDescription!: ElementRef;
   @ViewChild('arrowDropdown') arrowDropdown!: ElementRef;
+  isDropdownInputOpen = false;
+
+  @ViewChild('dropdownTrigger') dropdownTrigger!: ElementRef;
+  @ViewChild('dropdownMenu') dropdownMenu!: ElementRef;
 
   currentTab = 'home';
   dataForma: any[] =[];
@@ -92,10 +100,10 @@ export class HomeComponent implements OnInit{
 
   ngOnInit(): void {
     this.aliquotaForm = this.fb.group({
-      ALIQUOTA: [0],
-      IBS: [0],
-      CBS: [0],
-      IS: [0]
+      ALIQUOTA: [27.5],
+      IBS: [30],
+      CBS: [40],
+      IS: [30]
     });
 
     this.aliquotaForm.get('ALIQUOTA')?.valueChanges.subscribe((aliquotaValue) => {
@@ -181,20 +189,18 @@ export class HomeComponent implements OnInit{
   dropdownStates: { [key: number]: boolean } = {};
 
   toggleDropdown(index: number, el: any): void {
-    if(!this.dropdownStates[index]){
-      this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(180deg)')
-      this.getData(el, 1, 10);
+    if(el !== 'total'){
+      if(!this.dropdownStates[index] ){
+        this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(180deg)')
+        this.getData(el, 1);
+      }
+      else{
+        this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(0deg)')
+      }
+      this.dropdownStates[index] = !this.dropdownStates[index];
     }
-
-    else{
-      this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(0deg)')
-    }
-
-    this.dropdownStates[index] = !this.dropdownStates[index];
-
-    console.log("Detalhes: ", this.dataReport)
-
   }
+
 
   isDropdownOpen(index: number, classification: string): boolean {
     return this.dropdownStates[index] || false;
@@ -224,21 +230,28 @@ export class HomeComponent implements OnInit{
     console.log("File: ", file)
     this.fileName = file.name;
     if (file) {
-      this.homeService.uploadFileReport(file).subscribe(response => {
+      const aliquota = this.aliquotaForm.get('ALIQUOTA')?.value;
+      const ibs = this.aliquotaForm.get('IBS')?.value;
+      const cbs = this.aliquotaForm.get('CBS')?.value;
+      const is = this.aliquotaForm.get('IS')?.value;
+      this.homeService.uploadFileReport(file, aliquota, ibs, cbs, is ).subscribe(response => {
         this.dataReportReponse = response;
-        let object: DataReport = {} as DataReport;
+        let object: Report = {} as Report;
         this.dataReportReponse.classifications.forEach((el) => {
-          this.dataReport[el] = object;
+          this.dataReport[el.name] = object;
         })
-        // console.log('****************dataReport', this.dataReport);
+        console.log('****************dataReport', this.dataReport);
 
         // this.readFile(file);
       });
     }
   }
 
-  getData(classification: string, currentPage: number, size: number){
-    this.homeService.getData(this.dataReportReponse._id, classification, currentPage, size).subscribe((data) => {
+  getData(classification: string, currentPage: number){
+    // if(!Object.hasOwn(this.dataReport[classification], 'currentOperation')){
+    //   this.dataReport[classification]['currentOperation'] = null;
+    // }
+    this.homeService.getData(this.dataReportReponse._id, classification, currentPage, 10,  this.dataReport[classification]['currentOperation']).subscribe((data) => {
       this.dataReport[classification]=data;
       this.dataReport[classification].ncms.forEach((item: Record<string, any>) => {
         Object.keys(item).forEach((key) => {
@@ -295,14 +308,11 @@ export class HomeComponent implements OnInit{
 
   calcTax(tax: number, value: number, reduction: number){
     const calcBase = (value * (1 - reduction ))
-
-    console.log("************Resultado: ", calcBase * tax)
-
     return parseFloat((calcBase * tax).toFixed(2));
   }
 
-  changePage(classification: string, currentPage: number, totalPages: number) {
-    this.getData(classification, currentPage, totalPages);
+  changePage(classification: string, currentPage: number) {
+    this.getData(classification, currentPage);
   }
 
   onAliquotaChange(value: number): void {
@@ -326,6 +336,43 @@ export class HomeComponent implements OnInit{
   }
 
   sortByColumn(el:any){}
+
+  dropdownStatesInputFilter: { [key: number]: boolean } = {};
+  toggleDropdownInput(index: number, el: any) {
+    this.dropdownStatesInputFilter[index] = !this.dropdownStatesInputFilter[index];
+  }
+
+  isDropdownIputFilterOpen(index: number, classification: string): boolean {
+    return this.dropdownStatesInputFilter[index] || false;
+  }
+
+  onSelectChange(value: string, classification: string, index: number) {
+    // const value = (event.target as HTMLSelectElement).value;
+    // console.log('Selecionado:', value);
+    this.isDropdownInputOpen = false; // Fecha o dropdown após a seleção
+    if(value !== 'null'){
+      this.dataReport[classification]['currentOperation'] = value;
+      this.getData(classification, 1)
+    }
+    else{
+      this.dataReport[classification]['currentOperation'] = null;
+      this.getData(classification, 1)
+    }
+    this.toggleDropdownInput(index, classification)
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleClickOutside(event: Event) {
+    if (
+      this.isDropdownInputOpen &&
+      this.dropdownTrigger &&
+      !this.dropdownTrigger.nativeElement.contains(event.target) &&
+      this.dropdownMenu &&
+      !this.dropdownMenu.nativeElement.contains(event.target)
+    ) {
+      this.isDropdownInputOpen = false;
+    }
+  }
 
 }
 

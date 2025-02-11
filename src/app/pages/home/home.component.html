@@ -60,7 +60,7 @@
               <input type="text" placeholder="Proporção CBS" formControlName="CBS" mask="percent" suffix="%" decimalMarker="," >
             </div>
             <div class="box-input">
-              <label for="">Proporção IS</label>
+              <label for="">Alíquota IS</label>
               <input type="text" placeholder="Proporção CBS" formControlName="IS" mask="percent" suffix="%" decimalMarker="," >
             </div>
           </form>
@@ -70,34 +70,95 @@
       <div class="box-content">
         @if(dataReportReponse.classifications){
           @for (classification of dataReportReponse.classifications; track classification; let i = $index; ) {
-            <div class="card" >
-              <span>{{classification}}</span>
-              <button class="dropdown-toggle" (click)="toggleDropdown(i, classification)" #arrowDropdown>
+            <div class="card" [ngClass]="{'card-total': classification.name === 'total'}">
+              <div class="box-infos" >
+                <span class="span-box classification" [ngClass]="{'total-title': classification.name === 'total'}">{{classification.name}}</span>
+                <div class="box-column">
+                  <div class="first-line">
+                    <span class="span-box">Total de entradas: <span class="total">{{classification.totalEntrada | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</span></span>
+                    <span class="span-box">Total de saídas: <span class="negative-cash-flow"> {{classification.totalSaida | currency: 'BRL'}} </span></span>
+                    <span class="span-box">Saldo:
+                      <span [ngClass]=" classification.totalEntrada - classification.totalSaida < 0? 'negative-cash-flow': 'saldo'">
+                      {{classification.totalEntrada - classification.totalSaida | currency: 'BRL'}}
+                      </span>
+                    </span>
+                  </div>
+
+                  <div class="second-line">
+                    <span class="span-box">Total CBS: <span >
+                      {{classification.totalImpostoCbs| currency: 'BRL'}}
+                    </span>
+                    </span>
+
+                    <span class="span-box">Total IBS:
+                      <span>
+                        {{classification.totalImpostoIbs| currency: 'BRL'}}
+                      </span>
+                    </span>
+
+                    <span class="span-box">Total IS:
+                      <span>
+                        {{classification.totalImpostoIs| currency: 'BRL'}}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button class="dropdown-toggle" (click)="toggleDropdown(i, classification.name)" #arrowDropdown *ngIf="classification.name !== 'total'">
                 <img
                   src="images/arrow-down.svg"
                   alt="Toggle"
                 >
               </button>
             </div>
-            <div class="content" [style.display]="isDropdownOpen(i, classification)? '' : 'none'" class="dropdown-row">
+            <div class="content" [style.display]="isDropdownOpen(i, classification.name)? '' : 'none'" class="dropdown-row">
               <table class="table">
                 <thead>
                   <tr>
                     @for (column of columnsToDisplay; track column) {
                       <th>
-                        <span class="cell-with-sort">
-                          {{column | headerTable}}
-                          <!-- <button class="button-sort" (click)="sortByColumn(column)">
-                            <img src="images/sort.svg" alt="">
-                          </button> -->
-                        </span>
+                        @if(column !== 'input'){
+                          <span class="cell-with-sort">
+                            {{column | headerTable}}
+                            <!-- <button class="button-sort" (click)="sortByColumn(column)">
+                              <img src="images/sort.svg" alt="">
+                            </button> -->
+                          </span>
+                        }
+                        @else {
+                          <span class="cell" #dropdownTrigger>
+                            {{column | headerTable}}
+                            <button class="button-sort" (click)="toggleDropdownInput(i, classification.name)">
+                              <img src="images/sort.svg" alt="">
+                            </button>
+                            <!-- <select (change)="onSelectChange($event, classification.name)" [style.display]="isDropdownInputOpen? 'flex': 'none'">
+                              <option [value]="null" selected>Selecione uma opção</option>
+                              <option value="ENTRADA">Entrada</option>
+                              <option value="SAIDA">Saida</option>
+                            </select> -->
+
+                            <div class="dropdown" [style.display]="isDropdownIputFilterOpen(i, classification.name)? '' : 'none'">
+                              <span (click)="onSelectChange('ENTRADA', classification.name, i)">Entrada</span>
+                              <span (click)="onSelectChange('SAIDA', classification.name, i)">Saida</span>
+                              <span (click)="onSelectChange('', classification.name, i)">Saida</span>
+                            </div>
+                          </span>
+
+                          <!-- <div *ngIf="isDropdownInputOpen" class="dropdown" #dropdownMenu>
+                            <select (change)="onSelectChange($event)">
+                              <option value="asc">Ascendente</option>
+                              <option value="desc">Descendente</option>
+                            </select>
+                          </div> -->
+                        }
                       </th>
                     }
                   </tr>
                 </thead>
 
                 <tbody>
-                  @for (el of dataReport[classification].ncms; track el; let i = $index; ) {
+                  @for (el of dataReport[classification.name].ncms; track el; let i = $index; ) {
                     <tr [ngClass]="{ 'even-row': i % 2 === 0, 'odd-row': i % 2 !== 0 }">
                       <td>
                         <span class="input-element" [ngClass]="el.OPERATION === 'ENTRADA' ? 'input': 'output'">{{el.OPERATION }} </span>
@@ -114,9 +175,9 @@
                 </tbody>
               </table>
               <div class="pagination">
-                <button (click)="changePage(classification, dataReport[classification].currentPage - 1, dataReport[classification].totalPages)" [disabled]="dataReport[classification].currentPage === 1">Anterior</button>
-                <span>Página {{ dataReport[classification].currentPage }} de {{ dataReport[classification].totalPages }}</span>
-                <button (click)="changePage(classification, dataReport[classification].currentPage + 1, dataReport[classification].totalPages)" [disabled]="dataReport[classification].currentPage === dataReport[classification].totalPages">Próxima</button>
+                <button (click)="changePage(classification.name, dataReport[classification.name].currentPage - 1)" [disabled]="dataReport[classification.name].currentPage === 1">Anterior</button>
+                <span>Página {{ dataReport[classification.name].currentPage }} de {{ dataReport[classification.name].totalPages }}</span>
+                <button (click)="changePage(classification.name, dataReport[classification.name].currentPage + 1)" [disabled]="dataReport[classification.name].currentPage === dataReport[classification.name].totalPages">Próxima</button>
               </div>
             </div>
           }

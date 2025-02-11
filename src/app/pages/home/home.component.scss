@@ -142,11 +142,53 @@
         background-color: $color-gray;
         height: 80px;
 
-        span{
-          font-size: 16px;
-          /* font-weight: bolder; */
-          text-transform: capitalize;
+        .box-infos{
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .span-box{
+            font-size: 12px;
+            padding: 8px 12px;
+            background: #fff;
+            border-radius: 30px;
+            font-weight: 500;
+          }
+          span{
+            font-size: 12px;
+          }
+
+          .classification{
+            font-size: 16px;
+            text-transform: capitalize;
+            background-color: transparent;
+            padding: 0;
+            color: $color-black;
+          }
+
+          .box-column{
+            display: flex;
+            gap: 8px;
+
+            .first-line, .second-line{
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .total, .saldo{
+                color: $color-sucess;
+              }
+            }
+          }
         }
+      }
+
+      .card-total{
+        background-color: $color-secondary;
+      }
+
+      .total-title{
+        color: #fff !important;
       }
     }
 
@@ -323,11 +365,41 @@ table {
   }
 }
 
-.cell-with-sort{
+.cell{
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  position: relative;
+
+  .dropdown{
+    position: absolute;
+    top: 20px;
+    border: none;
+    height: 90px;
+    width: 146px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: $color-white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    span{
+      height: 30px;
+      margin: 4px 0;
+      width: 100%;
+      background-color: $color-white;
+      color: $color-black;
+      display: flex;
+      padding-left: 18px;
+      align-items: center;
+      cursor: pointer;
+
+      &:hover{
+        background-color: $color-gray;
+      }
+    }
+  }
 }
 
 .input-element{

@@ -1,17 +1,15 @@
 export interface ResponseReport{
   _id: string;
-  classifications: string[];
+  classifications: Classification[];
 }
 
-export interface DataReport{
-  classification: string;
-  reportId: string;
-  classification: string;
-  totalNcms: number;
-  totalPages: number;
-  currentPage: number;
-  limit: number;
-  ncm: Ncm[];
+export interface Classification{
+  name: string;
+  totalEntrada: number;
+  totalSaida: number;
+  totalImpostoCbs: number;
+  totalImpostoIbs: number;
+  totalImpostoIs: number;
 }
 
 export interface Ncm{
@@ -27,9 +25,23 @@ export interface Ncm{
   IBS: string;
   CBS: string;
   IS: string;
-  reductions: {
-    reduction_ibs: string;
-    reduction_cbs: string;
-    reduction_is: string;
-  };
+  reductions: Reduction;
+}
+
+export interface Reduction {
+  reduction_ibs: string;
+  reduction_cbs: string;
+  reduction_is: string;
+}
+
+export interface Report {
+  reportId: string;
+  classification: string;
+  operation: string;
+  totalNcms: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
+  ncms: Ncm[];
+  currentOperation: null | string;
 }
