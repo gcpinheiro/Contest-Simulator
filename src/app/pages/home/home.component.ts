@@ -15,7 +15,7 @@ import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 
 registerLocaleData(localePt);
-type columnName = 'input' |'tipi' |'classification' | 'description' | 'iss'| 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' | 'total' ;
+type columnName = 'input' |'tipi' |'classification' | 'description' | 'iss'| 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' | 'total_pós' | 'total_pré' ;
 
 @Component({
   selector: 'app-home',
@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit{
   private homeService = inject(HomeService);
   private fb = inject(FormBuilder);
   file: File | null = null;
-  columnsToDisplay: columnName[] = ['input','tipi','classification','description', 'ipi','iss','pis','cofins', 'total', 'ibs' , 'cbs' , 'is', 'total' ,'value'];
+  columnsToDisplay: columnName[] = ['input','tipi','classification','description', 'ipi','iss','pis','cofins', 'total_pré', 'ibs' , 'cbs' , 'is', 'total_pós' ,'value'];
   expandedElement: any | null;
   showBoxListTipi: boolean = false;
   @ViewChild('inputRefTipi') inputRefTipi!: ElementRef;

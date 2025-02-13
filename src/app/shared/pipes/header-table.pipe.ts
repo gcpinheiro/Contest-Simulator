@@ -22,7 +22,8 @@ export class HeaderTablePipe implements PipeTransform {
       case 'cbs': return 'CBS'
       case 'is': return 'IS'
       case 'iss': return 'ISS'
-      case 'total': return 'Total'
+      case 'total_pré': return 'Total pré-reforma'
+      case 'total_pós': return 'Total pós-reforma'
 
     }
     return null;
