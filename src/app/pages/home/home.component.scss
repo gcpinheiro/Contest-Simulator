@@ -233,7 +233,8 @@
 
     .box-table{
       width: 100%;
-      height: 100%;
+      height: auto;
+      overflow: scroll;
       display: flex;
       flex-direction: column;
       background-color: $color-white;

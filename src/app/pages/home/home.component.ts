@@ -164,18 +164,14 @@ export class HomeComponent implements OnInit{
   toggleDropdown(index: number, el: any, operation: string): void {
     if(el !== 'total'){
       if(!this.dropdownStates[index] ){
-        this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(180deg)')
         this.getData(el, 1, operation);
-      }
-      else{
-        this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(0deg)')
       }
       this.dropdownStates[index] = !this.dropdownStates[index];
     }
   }
 
 
-  isDropdownOpen(index: number, classification: string): boolean {
+  isDropdownOpen(index: number): boolean {
     return this.dropdownStates[index] || false;
   }
 
@@ -336,13 +332,9 @@ export class HomeComponent implements OnInit{
   dropdownStatesInputFilter: { [key: number]: boolean } = {};
   toggleDropdownInput(index: number, el: any, operation: string) {
     if(!this.dropdownStatesInputFilter[index] ){
-      this.renderer2.setStyle( this.arrowDropdownInput.nativeElement,'transform', 'rotate(180deg)')
       if(operation !== 'Todas'){
         this.getData(el, 1, operation);
       }
-    }
-    else{
-      this.renderer2.setStyle( this.arrowDropdownInput.nativeElement,'transform', 'rotate(0deg)')
     }
 
     this.dropdownStatesInputFilter[index] = !this.dropdownStatesInputFilter[index];

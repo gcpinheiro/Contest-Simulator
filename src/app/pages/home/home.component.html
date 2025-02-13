@@ -110,10 +110,11 @@
                 <img
                   src="images/arrow-down.svg"
                   alt="Toggle"
+                  [ngStyle]="{ 'transform': !this.dropdownStates[i] ? 'rotate(180deg)' : 'rotate(0deg)', 'transition': '.2s ease-in' }"
                 >
               </button>
             </div>
-            <div class="content" [style.display]="isDropdownOpen(i, classification.name)? '' : 'none'" class="dropdown-row">
+            <div class="content" [style.display]="isDropdownOpen(i)? '' : 'none'" class="dropdown-row">
               <table class="table">
                 <thead>
                   <tr>
@@ -128,7 +129,9 @@
                           <span class="cell" #dropdownTrigger>
                             {{column | headerTable}}
                             <button class="button-toggle" (click)="toggleDropdownInput(i, classification.name, dataReport[classification.name].operation)" #arrowDropdownInput>
-                              <img src="images/arrow-down.svg" alt="">
+                              <img src="images/arrow-down.svg" alt=""
+                              [ngStyle]="{ 'transform': !this.dropdownStatesInputFilter[i] ? 'rotate(180deg)' : 'rotate(0deg)', 'transition': '.2s ease-in' }"
+                              >
                             </button>
 
                             <div class="dropdown" [style.display]="isDropdownIputFilterOpen(i, classification.name)? '' : 'none'">
