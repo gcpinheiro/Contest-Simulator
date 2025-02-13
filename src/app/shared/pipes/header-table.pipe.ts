@@ -21,6 +21,8 @@ export class HeaderTablePipe implements PipeTransform {
       case 'ibs': return 'IBS'
       case 'cbs': return 'CBS'
       case 'is': return 'IS'
+      case 'iss': return 'ISS'
+      case 'total': return 'Total'
 
     }
     return null;

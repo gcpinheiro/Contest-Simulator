@@ -22,7 +22,6 @@
             <h1>Simulador</h1>
             <span class="client-name">{{fileName}}</span>
           </div>
-          <!-- <span class="file-name">{{fileName}}</span> -->
         </div>
 
         <div class="buttons">
@@ -49,20 +48,22 @@
           <form [formGroup]="aliquotaForm">
             <div class="box-input">
               <label for="">Alíquota </label>
-              <input type="text" placeholder="Alíquota" formControlName="ALIQUOTA" mask="percent" suffix="%" decimalMarker="," >
+              <input type="text" placeholder="Alíquota" formControlName="ALIQUOTA" mask="percent" suffix="%" decimalMarker=",">
             </div>
             <div class="box-input">
               <label for="">Proporção IBS</label>
-              <input type="text" placeholder="Proporção IBS" formControlName="IBS" mask="percent" suffix="%" decimalMarker="," >
+              <input type="text" placeholder="Proporção IBS" formControlName="IBS" mask="percent" suffix="%" decimalMarker="," (input)="updateTax('IBS')">
             </div>
             <div class="box-input">
               <label for="">Proporção CBS</label>
-              <input type="text" placeholder="Proporção CBS" formControlName="CBS" mask="percent" suffix="%" decimalMarker="," >
+              <input type="text" placeholder="Proporção CBS" formControlName="CBS" mask="percent" suffix="%" decimalMarker="," (input)="updateTax('CBS')">
             </div>
-            <div class="box-input">
+            <div class="box-input is">
               <label for="">Alíquota IS</label>
               <input type="text" placeholder="Proporção CBS" formControlName="IS" mask="percent" suffix="%" decimalMarker="," >
             </div>
+
+            <button class="button-calc-tax" (click)="updateAliquotas()">Calcular</button>
           </form>
         </div>
       </div>
@@ -76,36 +77,36 @@
                 <div class="box-column">
                   <div class="first-line">
                     <span class="span-box">Total de entradas: <span class="total">{{classification.totalEntrada | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</span></span>
-                    <span class="span-box">Total de saídas: <span class="negative-cash-flow"> {{classification.totalSaida | currency: 'BRL'}} </span></span>
+                    <span class="span-box">Total de saídas: <span class="negative-cash-flow"> {{classification.totalSaida | currency:'BRL':'symbol':'1.2-2':'pt-BR'}} </span></span>
                     <span class="span-box">Saldo:
                       <span [ngClass]=" classification.totalEntrada - classification.totalSaida < 0? 'negative-cash-flow': 'saldo'">
-                      {{classification.totalEntrada - classification.totalSaida | currency: 'BRL'}}
+                      {{classification.totalEntrada - classification.totalSaida | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
                       </span>
                     </span>
                   </div>
 
                   <div class="second-line">
                     <span class="span-box">Total CBS: <span >
-                      {{classification.totalImpostoCbs| currency: 'BRL'}}
+                      {{classification.totalImpostoCbs| currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
                     </span>
                     </span>
 
                     <span class="span-box">Total IBS:
                       <span>
-                        {{classification.totalImpostoIbs| currency: 'BRL'}}
+                        {{classification.totalImpostoIbs| currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
                       </span>
                     </span>
 
                     <span class="span-box">Total IS:
                       <span>
-                        {{classification.totalImpostoIs| currency: 'BRL'}}
+                        {{classification.totalImpostoIs| currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
                       </span>
                     </span>
                   </div>
                 </div>
               </div>
 
-              <button class="dropdown-toggle" (click)="toggleDropdown(i, classification.name)" #arrowDropdown *ngIf="classification.name !== 'total'">
+              <button class="dropdown-toggle" (click)="toggleDropdown(i, classification.name, dataReport[classification.name].operation)" #arrowDropdown *ngIf="classification.name !== 'total'">
                 <img
                   src="images/arrow-down.svg"
                   alt="Toggle"
@@ -121,36 +122,21 @@
                         @if(column !== 'input'){
                           <span class="cell-with-sort">
                             {{column | headerTable}}
-                            <!-- <button class="button-sort" (click)="sortByColumn(column)">
-                              <img src="images/sort.svg" alt="">
-                            </button> -->
                           </span>
                         }
                         @else {
                           <span class="cell" #dropdownTrigger>
                             {{column | headerTable}}
-                            <button class="button-sort" (click)="toggleDropdownInput(i, classification.name)">
-                              <img src="images/sort.svg" alt="">
+                            <button class="button-toggle" (click)="toggleDropdownInput(i, classification.name, dataReport[classification.name].operation)" #arrowDropdownInput>
+                              <img src="images/arrow-down.svg" alt="">
                             </button>
-                            <!-- <select (change)="onSelectChange($event, classification.name)" [style.display]="isDropdownInputOpen? 'flex': 'none'">
-                              <option [value]="null" selected>Selecione uma opção</option>
-                              <option value="ENTRADA">Entrada</option>
-                              <option value="SAIDA">Saida</option>
-                            </select> -->
 
                             <div class="dropdown" [style.display]="isDropdownIputFilterOpen(i, classification.name)? '' : 'none'">
+                              <span (click)="onSelectChange('Todas', classification.name, i)">Todas categorias</span>
                               <span (click)="onSelectChange('ENTRADA', classification.name, i)">Entrada</span>
                               <span (click)="onSelectChange('SAIDA', classification.name, i)">Saida</span>
-                              <span (click)="onSelectChange('', classification.name, i)">Saida</span>
                             </div>
                           </span>
-
-                          <!-- <div *ngIf="isDropdownInputOpen" class="dropdown" #dropdownMenu>
-                            <select (change)="onSelectChange($event)">
-                              <option value="asc">Ascendente</option>
-                              <option value="desc">Descendente</option>
-                            </select>
-                          </div> -->
                         }
                       </th>
                     }
@@ -166,18 +152,24 @@
                       <td>{{el.NCM}}</td>
                       <td>{{el.CLASSIFICATION}}</td>
                       <td>{{el.DESCRIPTION}}</td>
-                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(IBS, el.VALUE, el.reductions['reduction_ibs']) | currency: 'BRL'}}</td>
-                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(CBS, el.VALUE, el.reductions['reduction_cbs']) | currency: 'BRL'}}</td>
-                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(IS, el.VALUE, el.reductions['reduction_is']) | currency: 'BRL'}}</td>
-                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{ el.VALUE | currency: 'BRL' }}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{el.IPI |  currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{el.ISS |  currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{el.PIS |  currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{el.CONFINS |  currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{el.IPI + el.ISS + el.PIS + el.CONFINS |  currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(IBS, el.VALUE, el.reductions['reduction_ibs']) | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(CBS, el.VALUE, el.reductions['reduction_cbs']) | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTax(IS, el.VALUE, el.reductions['reduction_is']) | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{calcTaxTotal(el.VALUE, el.reductions['reduction_ibs'], el.reductions['reduction_cbs'], el.reductions['reduction_is']) |  currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                      <td [ngClass]="{'negative-cash-flow' : el.OPERATION !== 'ENTRADA'}">{{ el.VALUE | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
                     </tr>
                   }
                 </tbody>
               </table>
               <div class="pagination">
-                <button (click)="changePage(classification.name, dataReport[classification.name].currentPage - 1)" [disabled]="dataReport[classification.name].currentPage === 1">Anterior</button>
+                <button (click)="changePage(classification.name, dataReport[classification.name].currentPage - 1, dataReport[classification.name].operation)" [disabled]="dataReport[classification.name].currentPage === 1">Anterior</button>
                 <span>Página {{ dataReport[classification.name].currentPage }} de {{ dataReport[classification.name].totalPages }}</span>
-                <button (click)="changePage(classification.name, dataReport[classification.name].currentPage + 1)" [disabled]="dataReport[classification.name].currentPage === dataReport[classification.name].totalPages">Próxima</button>
+                <button (click)="changePage(classification.name, dataReport[classification.name].currentPage + 1, dataReport[classification.name].operation)" [disabled]="dataReport[classification.name].currentPage === dataReport[classification.name].totalPages">Próxima</button>
               </div>
             </div>
           }

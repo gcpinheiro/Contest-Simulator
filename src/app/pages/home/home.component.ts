@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { HeaderComponent } from "../../shared/header/header.component";
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import {MatIconModule} from '@angular/material/icon';
@@ -15,7 +15,7 @@ import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 
 registerLocaleData(localePt);
-type columnName = 'input' |'tipi' |'classification' | 'description' | 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' ;
+type columnName = 'input' |'tipi' |'classification' | 'description' | 'iss'| 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' | 'total' ;
 
 @Component({
   selector: 'app-home',
@@ -50,13 +50,14 @@ export class HomeComponent implements OnInit{
   private homeService = inject(HomeService);
   private fb = inject(FormBuilder);
   file: File | null = null;
-  columnsToDisplay: columnName[] = ['input','tipi','classification', 'description', 'ibs' , 'cbs' , 'is', 'value'];
+  columnsToDisplay: columnName[] = ['input','tipi','classification','description', 'ipi','iss','pis','cofins', 'total', 'ibs' , 'cbs' , 'is', 'total' ,'value'];
   expandedElement: any | null;
   showBoxListTipi: boolean = false;
   @ViewChild('inputRefTipi') inputRefTipi!: ElementRef;
   @ViewChild('inputRefClassification') inputRefClassification!: ElementRef;
   @ViewChild('inputRefDescription') inputRefDescription!: ElementRef;
   @ViewChild('arrowDropdown') arrowDropdown!: ElementRef;
+  @ViewChild('arrowDropdownInput') arrowDropdownInput!: ElementRef;
   isDropdownInputOpen = false;
 
   @ViewChild('dropdownTrigger') dropdownTrigger!: ElementRef;
@@ -92,53 +93,25 @@ export class HomeComponent implements OnInit{
   IBS = 0;
   IS = 0;
 
-  ngAfterViewInit() {
-    if (typeof window !== 'undefined' && typeof document !== 'undefined') {3
-
-    }
-  }
-
   ngOnInit(): void {
     this.aliquotaForm = this.fb.group({
       ALIQUOTA: [27.5],
-      IBS: [30],
-      CBS: [40],
-      IS: [30]
+      IBS: [70],
+      CBS: [30],
+      IS: [10]
     });
+    const aliquota = this.aliquotaForm.get('ALIQUOTA')?.value;
+    const ibs = this.aliquotaForm.get('IBS')?.value;
+    const cbs = this.aliquotaForm.get('CBS')?.value;
+    const is = this.aliquotaForm.get('IS')?.value;
 
-    this.aliquotaForm.get('ALIQUOTA')?.valueChanges.subscribe((aliquotaValue) => {
-      console.log("ibsValue: ", aliquotaValue)
+    this.IBS = ((aliquota / 100) * (ibs/100));
+    this.CBS = ((aliquota / 100) * (cbs/100))
+    this.IS = (is/100)
 
-      if(!aliquotaValue){
-        this.IBS = 0;
-        this.CBS = 0;
-        this.IS = 0;
-        this.aliquotaForm.patchValue({
-          IBS: 0,
-          CBS: 0,
-          IS: 0
-        });
-      }
+    this.onAliquotaChange();
+    this.changeTaxs();
 
-    })
-    this.aliquotaForm.get('IBS')?.valueChanges.subscribe((ibsValue) => {
-      console.log("ibsValue: ", ibsValue)
-      this.IBS = ((this.aliquotaForm.get('ALIQUOTA')?.value / 100) * (ibsValue/100))
-    })
-
-    this.aliquotaForm.get('CBS')?.valueChanges.subscribe((cbsValue) => {
-      console.log("cbsValue: ", cbsValue)
-
-      this.CBS = ((this.aliquotaForm.get('ALIQUOTA')?.value / 100) * (cbsValue/100))
-      console.log("this.CBS: ", this.CBS)
-    })
-
-    this.aliquotaForm.get('IS')?.valueChanges.subscribe((isValue) => {
-      console.log("cbsValue: ", isValue)
-
-      this.IS = ((this.aliquotaForm.get('ALIQUOTA')?.value / 100) * (isValue/100))
-      console.log("this.CBS: ", this.IS)
-    })
 
     const documentStyle = getComputedStyle(document.documentElement);
       const textColor = documentStyle.getPropertyValue('--text-color');
@@ -188,11 +161,11 @@ export class HomeComponent implements OnInit{
 
   dropdownStates: { [key: number]: boolean } = {};
 
-  toggleDropdown(index: number, el: any): void {
+  toggleDropdown(index: number, el: any, operation: string): void {
     if(el !== 'total'){
       if(!this.dropdownStates[index] ){
         this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(180deg)')
-        this.getData(el, 1);
+        this.getData(el, 1, operation);
       }
       else{
         this.renderer2.setStyle( this.arrowDropdown.nativeElement,'transform', 'rotate(0deg)')
@@ -206,16 +179,10 @@ export class HomeComponent implements OnInit{
     return this.dropdownStates[index] || false;
   }
 
-  calculateTotal(el: any): number {
-    const baseCalculo = el.VALUE * (1 - el)
-    return baseCalculo;
-   }
-
   uploadFileRules(event: any) {
     const file: File = event.target.files[0];
     if (file) {
       this.homeService.uploadFileRules(file).subscribe(response => {
-        console.log('File uploaded successfully', response);
       });
     }
   }
@@ -227,7 +194,6 @@ export class HomeComponent implements OnInit{
       this.dropdownStates = {};
     }
     const file: File = event.target.files[0];
-    console.log("File: ", file)
     this.fileName = file.name;
     if (file) {
       const aliquota = this.aliquotaForm.get('ALIQUOTA')?.value;
@@ -240,62 +206,51 @@ export class HomeComponent implements OnInit{
         this.dataReportReponse.classifications.forEach((el) => {
           this.dataReport[el.name] = object;
         })
-        console.log('****************dataReport', this.dataReport);
 
-        // this.readFile(file);
+        this.dataReportReponse.classifications = this.dataReportReponse.classifications.sort((a, b) => {
+          return a.name === "total" ? -1 : b.name === "total" ? 1 : 0;
+        });
       });
     }
   }
 
-  getData(classification: string, currentPage: number){
-    // if(!Object.hasOwn(this.dataReport[classification], 'currentOperation')){
-    //   this.dataReport[classification]['currentOperation'] = null;
-    // }
-    this.homeService.getData(this.dataReportReponse._id, classification, currentPage, 10,  this.dataReport[classification]['currentOperation']).subscribe((data) => {
+  getData(classification: string, currentPage: number, currentOperation: string ){
+    if(currentOperation){
+      this.dataReport[classification]['currentOperation'] = currentOperation;
+    }
+
+    this.homeService.getData(this.dataReportReponse._id, classification, currentPage, 10,  currentOperation).subscribe((data) => {
       this.dataReport[classification]=data;
       this.dataReport[classification].ncms.forEach((item: Record<string, any>) => {
         Object.keys(item).forEach((key) => {
-          // console.log("Fora do IF:", key, item[key]);
 
-          if (['CBS', 'CONFINS', 'IBS', 'IPI', 'IS', 'ISS', 'PIS', 'VALUE'].includes(key)) {
+          if (['CBS', 'IBS', 'IS'].includes(key)) {
             const res = this.convertPercentage(item[key]);
-            // console.log("Verificando o retorno:", res);
 
-            // Atualiza diretamente o valor no objeto
             if(key === 'VALUE'){
+              item[key].replace()
               item[key] = Number(res);
             }
             else{
               item[key] = Number(res) / 100;
             }
+          }
 
+          if (['IPI', 'ISS', 'PIS', 'CONFINS', 'VALUE'].includes(key)) {
+            const numericValue = parseFloat(item[key].replace('%', '').replace(',', '.'));
+            item[key] = Number(numericValue);
           }
         });
 
-
         Object.keys(item['reductions']).forEach((key) => {
-          // console.log("Fora do IF:", key, item[key]);
 
           const res = this.convertPercentage(item['reductions'][key]);
 
             item['reductions'][key] = Number(res) / 100;
         });
       });
+
     })
-  }
-
-  parseCSV(csvText: string): any[] {
-    const lines = csvText.split('\n');
-    const headers = lines[0].split(',');
-
-    return lines.slice(1).filter(line => line.trim() !== '').map(line => {
-      const values = line.split(',');
-      const obj: any = {};
-      headers.forEach((header, index) => {
-        obj[header.trim()] = values[index]?.trim();
-      });
-      return obj;
-    });
   }
 
   convertPercentage(value: string | number): number | string {
@@ -310,13 +265,54 @@ export class HomeComponent implements OnInit{
     const calcBase = (value * (1 - reduction ))
     return parseFloat((calcBase * tax).toFixed(2));
   }
+  calcTaxTotal(value: number, reduction_ibs: number, reduction_cbs: number, reduction_is: number,){
+    const ibs = this.calcTax(this.IBS, value, reduction_ibs);
+    const cbs = this.calcTax(this.CBS, value, reduction_cbs);
+    const is = this.calcTax(this.IS, value, reduction_is);
 
-  changePage(classification: string, currentPage: number) {
-    this.getData(classification, currentPage);
+    return ibs + cbs + is;
   }
 
-  onAliquotaChange(value: number): void {
-    this.aliquotaForm.get('ALIQUOTA')?.setValue(value);
+  changePage(classification: string, currentPage: number, currentOperation: any) {
+    this.getData(classification, currentPage, currentOperation);
+  }
+
+  onAliquotaChange(): void {
+    this.aliquotaForm.get('ALIQUOTA')?.valueChanges.subscribe((aliquotaValue)=>{
+      const ibs = this.aliquotaForm.get('IBS')?.value;
+      const cbs = this.aliquotaForm.get('CBS')?.value;
+      const is = this.aliquotaForm.get('IS')?.value;
+      this.IBS = ((aliquotaValue / 100) * (ibs/100))
+      this.CBS = ((aliquotaValue / 100) * (cbs/100))
+      this.IS = (is/100)
+    })
+  }
+
+  changeTaxs(){
+    let aliquotaValue = this.aliquotaForm.get('ALIQUOTA')?.value
+    this.aliquotaForm.get('IBS')?.valueChanges.subscribe((ibsValue) => {
+      this.IBS = ((aliquotaValue / 100) * (ibsValue/100))
+
+    })
+
+
+    this.aliquotaForm.get('CBS')?.valueChanges.subscribe((cbsValue) => {
+      this.CBS = ((aliquotaValue / 100) * (cbsValue/100))
+    })
+
+    this.aliquotaForm.get('IS')?.valueChanges.subscribe((isValue) => {
+      this.IS = (isValue/100)
+    })
+  }
+
+  updateTax(taxName: string){
+    const newValue = 100 - this.aliquotaForm.get(taxName)?.value;
+    const changeTaxName = taxName === 'IBS'? 'CBS': 'IBS';
+
+    this.aliquotaForm.patchValue({
+      [changeTaxName]: newValue
+    })
+
   }
 
   onPercentInput(field: string, event: Event): void {
@@ -338,8 +334,19 @@ export class HomeComponent implements OnInit{
   sortByColumn(el:any){}
 
   dropdownStatesInputFilter: { [key: number]: boolean } = {};
-  toggleDropdownInput(index: number, el: any) {
+  toggleDropdownInput(index: number, el: any, operation: string) {
+    if(!this.dropdownStatesInputFilter[index] ){
+      this.renderer2.setStyle( this.arrowDropdownInput.nativeElement,'transform', 'rotate(180deg)')
+      if(operation !== 'Todas'){
+        this.getData(el, 1, operation);
+      }
+    }
+    else{
+      this.renderer2.setStyle( this.arrowDropdownInput.nativeElement,'transform', 'rotate(0deg)')
+    }
+
     this.dropdownStatesInputFilter[index] = !this.dropdownStatesInputFilter[index];
+
   }
 
   isDropdownIputFilterOpen(index: number, classification: string): boolean {
@@ -347,31 +354,37 @@ export class HomeComponent implements OnInit{
   }
 
   onSelectChange(value: string, classification: string, index: number) {
-    // const value = (event.target as HTMLSelectElement).value;
-    // console.log('Selecionado:', value);
     this.isDropdownInputOpen = false; // Fecha o dropdown após a seleção
     if(value !== 'null'){
       this.dataReport[classification]['currentOperation'] = value;
-      this.getData(classification, 1)
+      this.getData(classification, 1, value)
     }
     else{
       this.dataReport[classification]['currentOperation'] = null;
-      this.getData(classification, 1)
+      this.getData(classification, 1, value)
     }
-    this.toggleDropdownInput(index, classification)
+    this.toggleDropdownInput(index, classification, value)
   }
 
-  @HostListener('document:click', ['$event'])
-  handleClickOutside(event: Event) {
-    if (
-      this.isDropdownInputOpen &&
-      this.dropdownTrigger &&
-      !this.dropdownTrigger.nativeElement.contains(event.target) &&
-      this.dropdownMenu &&
-      !this.dropdownMenu.nativeElement.contains(event.target)
-    ) {
-      this.isDropdownInputOpen = false;
-    }
+  updateAliquotas(){
+    const aliquota = this.aliquotaForm.get('ALIQUOTA')?.value;
+    const ibs = this.aliquotaForm.get('IBS')?.value;
+    const cbs = this.aliquotaForm.get('CBS')?.value;
+    const is = this.aliquotaForm.get('IS')?.value;
+    this.homeService.updateAliquotas(this.dataReportReponse._id, aliquota, ibs, cbs, is).subscribe((response) =>{
+      this.dataReportReponse = {} as ResponseReport;
+      this.dataReportReponse = response;
+      let object: Report = {} as Report;
+      this.dataReportReponse.classifications.forEach((el) => {
+        this.dataReport[el.name] = object;
+      })
+      this.dataReportReponse.classifications = this.dataReportReponse.classifications.sort((a, b) => {
+        return a.name === "total" ? -1 : b.name === "total" ? 1 : 0;
+      });
+      Object.keys(this.dropdownStates).forEach((el, index) => {
+        this.dropdownStates[index] = false;
+      })
+    })
   }
 
 }
