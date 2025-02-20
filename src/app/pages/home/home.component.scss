@@ -179,40 +179,54 @@
         box-sizing: border-box;
         border-radius: 8px;
         background-color: $color-gray;
-        height: 80px;
+        height: 120px;
+
+        .span-box{
+          font-size: 12px;
+          padding: 8px 12px;
+          background: #fff;
+          border-radius: 30px;
+          font-weight: 500;
+          width: 120px;
+        }
+
+        .classification{
+          font-size: 16px;
+          text-transform: capitalize;
+          background-color: transparent;
+          padding: 0;
+          color: $color-black;
+        }
 
         .box-infos{
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 24px;
+          width: calc(100% - 120px);
 
-          .span-box{
-            font-size: 12px;
-            padding: 8px 12px;
-            background: #fff;
-            border-radius: 30px;
-            font-weight: 500;
-          }
           span{
             font-size: 12px;
           }
 
-          .classification{
-            font-size: 16px;
-            text-transform: capitalize;
-            background-color: transparent;
-            padding: 0;
-            color: $color-black;
-          }
-
           .box-column{
             display: flex;
+            width: 100%;
+            flex-direction: column;
             gap: 8px;
 
             .first-line, .second-line{
               display: flex;
               align-items: center;
               gap: 8px;
+              width: 100%;
+              justify-content: flex-end;
+
+              .span-box{
+                height: 40px;
+                width: 215px;
+                display: flex;
+                align-items: center;
+              }
 
               .total, .saldo{
                 color: $color-sucess;
@@ -224,6 +238,10 @@
 
       .card-total{
         background-color: $color-secondary;
+
+        .box-column{
+          padding-right: 36px;
+        }
       }
 
       .total-title{
@@ -251,7 +269,6 @@
 
         .box-infos{
           display: flex;
-          flex-direction: column;
           gap: 16px;
 
           .names{

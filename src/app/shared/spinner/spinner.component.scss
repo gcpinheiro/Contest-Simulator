@@ -1,0 +1,18 @@
+
+.spinner{
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px dotted #fff;
+  animation: rotate 4s ease forwards;
+}
+
+@keyframes rotate{
+  to{
+    rotate: (0deg);
+  }
+
+  from{
+    rotate: (360deg);
+  }
+}

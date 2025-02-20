@@ -13,6 +13,7 @@ import { Report, ResponseReport } from './home';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
+import { ToastrService } from 'ngx-toastr';
 
 registerLocaleData(localePt);
 type columnName = 'input' |'tipi' |'classification' | 'description' | 'iss'| 'ibs' | 'cbs' | 'is'| 'value'| 'pis'| 'cofins'| 'ipi' | 'icms' | 'total_pós' | 'total_pré' ;
@@ -48,6 +49,7 @@ type columnName = 'input' |'tipi' |'classification' | 'description' | 'iss'| 'ib
 export class HomeComponent implements OnInit{
   private renderer2 = inject(Renderer2);
   private homeService = inject(HomeService);
+  private toastr = inject( ToastrService)
   private fb = inject(FormBuilder);
   file: File | null = null;
   columnsToDisplay: columnName[] = ['input','tipi','classification','description', 'ipi','iss','pis','cofins', 'total_pré', 'ibs' , 'cbs' , 'is', 'total_pós' ,'value'];
@@ -178,7 +180,13 @@ export class HomeComponent implements OnInit{
   uploadFileRules(event: any) {
     const file: File = event.target.files[0];
     if (file) {
-      this.homeService.uploadFileRules(file).subscribe(response => {
+      this.homeService.uploadFileRules(file).subscribe({
+        next: () => {
+          this.toastr.success('Arquivo de regras importado com sucesso!')
+        },
+        error: () => {
+          this.toastr.error('Erro ao importar o arquivo de regras.')
+        }
       });
     }
   }
@@ -207,6 +215,29 @@ export class HomeComponent implements OnInit{
           return a.name === "total" ? -1 : b.name === "total" ? 1 : 0;
         });
       });
+
+      this.homeService.uploadFileReport(file, aliquota, ibs, cbs, is ).subscribe({
+        next: (response) => {
+          try {
+            this.dataReportReponse = response;
+            let object: Report = {} as Report;
+            this.dataReportReponse.classifications.forEach((el) => {
+              this.dataReport[el.name] = object;
+            })
+
+            this.dataReportReponse.classifications = this.dataReportReponse.classifications.sort((a, b) => {
+              return a.name === "total" ? -1 : b.name === "total" ? 1 : 0;
+            });
+            this.toastr.success('Arquivo importado com sucesso!')
+
+          } catch (error) {
+            this.toastr.error('Erro ao importar o arquivo.')
+          }
+        },
+        error: ()=>{
+          this.toastr.error('Erro ao importar o arquivo.')
+        }
+      })
     }
   }
 

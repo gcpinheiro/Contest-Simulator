@@ -72,8 +72,8 @@
         @if(dataReportReponse.classifications){
           @for (classification of dataReportReponse.classifications; track classification; let i = $index; ) {
             <div class="card" [ngClass]="{'card-total': classification.name === 'total'}">
+              <span class="span-box classification" [ngClass]="{'total-title': classification.name === 'total'}">{{classification.name}}</span>
               <div class="box-infos" >
-                <span class="span-box classification" [ngClass]="{'total-title': classification.name === 'total'}">{{classification.name}}</span>
                 <div class="box-column">
                   <div class="first-line">
                     <span class="span-box">Total de entradas: <span class="total">{{classification.totalEntrada | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</span></span>
@@ -104,15 +104,14 @@
                     </span>
                   </div>
                 </div>
+                <button class="dropdown-toggle" (click)="toggleDropdown(i, classification.name, dataReport[classification.name].operation)" #arrowDropdown *ngIf="classification.name !== 'total'">
+                  <img
+                    src="images/arrow-down.svg"
+                    alt="Toggle"
+                    [ngStyle]="{ 'transform': !this.dropdownStates[i] ? 'rotate(180deg)' : 'rotate(0deg)', 'transition': '.2s ease-in' }"
+                  >
+                </button>
               </div>
-
-              <button class="dropdown-toggle" (click)="toggleDropdown(i, classification.name, dataReport[classification.name].operation)" #arrowDropdown *ngIf="classification.name !== 'total'">
-                <img
-                  src="images/arrow-down.svg"
-                  alt="Toggle"
-                  [ngStyle]="{ 'transform': !this.dropdownStates[i] ? 'rotate(180deg)' : 'rotate(0deg)', 'transition': '.2s ease-in' }"
-                >
-              </button>
             </div>
             <div class="content" [style.display]="isDropdownOpen(i)? '' : 'none'" class="dropdown-row">
               <table class="table">
